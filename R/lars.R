@@ -68,9 +68,9 @@ lars <- function(x, y)
     y <- scale(y, center = TRUE, scale = FALSE)
 
     # x not in model
-    inactive <- seq(m)
+    inActive <- seq(m)
     # im?
-    im <- inactive
+    im <- inActive
 
     first.in <- integer(m)
 
@@ -85,8 +85,11 @@ lars <- function(x, y)
 
     beta <- matrix(0, maxK + 1, m)
 
-    # active set of x
-    active <- NULL
+    # active set -- script{A}
+    Active <- NULL
+
+    # ignores
+    ignores <- NULL
 
     drops <- FALSE
     # sign of correlation
@@ -99,53 +102,66 @@ lars <- function(x, y)
         k  <- k + 1
 
         # remaining projections
-        C <- Cvec[inactive]
-
-        # largest inactive projection
+        C <- Cvec[inActive]
+        # largest inActive projection
         Cmax <- max(abs(C))
 
-        # TODO: assuming drops is FALSE
-
+        # new index to add
         new <- abs(C) >= Cmax - eps
+
+        # new is now Active
         C <- C[!new]
-        new <- inactive[new]
+        # get index of new
+        new <- inActive[new]
+        Sign <- c(Sign, sign(Cvec[new]))
 
-        for (inew in new)
-        {
-            # TODO: assuming use.Gram
-            R <- updateR(Gram[inew, inew], R, drop(Gram[inew, active]),
-                             Gram = TRUE, eps = eps)
-        }
+        Active <- c(Active, new)
+        gActive_inv <- solve(t(x[ , Active]) %*% x[ , Active])
 
-        if (attr(R, "rank") == length(active))
+
+        A <- 1 / sqrt( sum( gActive_inv * Sign ) )
+        w <- drop(A * gActive_inv)
+        u <- x[Active, ] * w
+        a <- drop(t(x) %*% t(u))
+
+
+
+
+        # TODO: assuming use.gram
+
+        if (length(Active) >= min(n - 1, m - length(ignores)))
         {
-            # if we've reached a singularity remove that variable
-            nR <- seq(length(active))
-            R <- R[nR, nR, drop = FALSE]
-            attr(R, "rank") <- length(active)
-            ignores <- c(ignores, inew)
+            gamhat <- Cmax / A
         } else
         {
-            # TODO: could probably figure out a way to remove this part
-            #  if statements are slow and this is probably going to be off
-            #  for a long time
-            if (first.in[inew] == 0)
-            {
-                # First time the variable goes in
-                first.in[inew] <- k
-            }
-            active <- c(active, inew)
-            Sign <- c(Sign, sign(Cvec[inew]))
+            a <- drop(w %*% Gram[Active, -c(Active, ignores), drop = FALSE])
+            gam <- c( (Cmax - C) / (A - a), (Cmax + C) / (A + a))
+            gamhat <- min(gam[gam > eps], Cmax / A)
         }
 
-        # TODO: undertand Gi1 (I think it is the same as script{g}_A^{-1}
-        Gi1 <- backsolve(R, backsolvet(R, Sign))
+        # TODO: assuming type == "lasso"
+        dropid <- NULL
+        b1 <- beta[k, Active]
 
-        # TODO: Ignore forward.stagewise method
+        z1 <- -b1 / w
+        zmin <- min(z1[z1 > eps], gamhat)
 
-        A <- 1 / sqrt(sum( Gi1 * Sign))
-        w <- A * Gi1
+        if (zmin < gamhat)
+        {
+            gamhat <- zmin
+            drops <- z1 == zmin
+        } else
+        {
+            drops <- FALSE
+        }
 
+        beta[k + 1, ] <- beta[k, ]
+        beta[k + 1, Active] <- beta[k + 1, Active] + gamhat * w
+
+        #TODO: assume use.Gam
+        Cvec <- Cvec - gamhat * Gram[ , Active, drop = FALSE] %*% w
+
+        Gamrat <- 
 
 
 
@@ -154,4 +170,38 @@ lars <- function(x, y)
 
 }
 
+
+        # Maybe more efficient?
+        # for (inew in new)
+        # {
+        #     # TODO: assuming use.Gram
+        #     R <- updateR(Gram[inew, inew], R, drop(Gram[inew, Active]),
+        #                      Gram = TRUE, eps = eps)
+        # }
+
+        # if (attr(R, "rank") == length(Active))
+        # {
+        #     # if we've reached a singularity remove that variable
+        #     nR <- seq(length(Active))
+        #     R <- R[nR, nR, drop = FALSE]
+        #     attr(R, "rank") <- length(Active)
+        #     ignores <- c(ignores, inew)
+        # } else
+        # {
+        #     # TODO: could probably figure out a way to remove this part
+        #     #  if statements are slow and this is probably going to be off
+        #     #  for a long time
+        #     if (first.in[inew] == 0)
+        #     {
+        #         # First time the variable goes in
+        #         first.in[inew] <- k
+        #     }
+        #     Active <- c(Active, inew)
+        #     Sign <- c(Sign, sign(Cvec[inew]))
+        # }
+
+        # # TODO: understand Gi1 (I think it is the same as script{g}_A^{-1}
+        # Gi1 <- backsolve(R, backsolvet(R, Sign))
+        # OR:
+        # Gi1 <- solve(t(x[ , new]) %*% x[ , new])
 
