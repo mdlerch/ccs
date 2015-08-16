@@ -138,7 +138,7 @@ lars <- function(x, y)
             Sign <- c(Sign, sign(Cvec[inew]))
         }
 
-        # TODO:  what is Gi1?
+        # TODO: undertand Gi1 (I think it is the same as script{g}_A^{-1}
         Gi1 <- backsolve(R, backsolvet(R, Sign))
 
         # TODO: Ignore forward.stagewise method
