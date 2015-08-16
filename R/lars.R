@@ -1,3 +1,5 @@
+# TODO: Removed action/actions variables
+
 set.seed(19)
 x <- matrix(rnorm(200), 20, 10)
 y <- rnorm(20)
@@ -23,7 +25,8 @@ updateR <- function(xnew, R = NULL, xold, Gram = FALSE, eps = 0.00001)
     if(rpp <= eps)
     {
         rpp <- eps
-    } else {
+    } else
+    {
         rpp <- sqrt(rpp)
         rank <- rank + 1
     }
@@ -32,6 +35,16 @@ updateR <- function(xnew, R = NULL, xold, Gram = FALSE, eps = 0.00001)
     R
 }
 
+# TODO: rewrite this function
+backsolvet <- function(r, x, k)
+{
+    if(missing(k))
+        k <- nrow(r)
+    r <- t(r)[k:1, k:1, drop = F]
+    x <- as.matrix(x)[k:1,  , drop = F]
+    x <- backsolve(r, x)
+    drop(x[k:1,  ])
+}
 
 
 lars <- function(x, y)
@@ -59,6 +72,8 @@ lars <- function(x, y)
     # im?
     im <- inactive
 
+    first.in <- integer(m)
+
     # initials
     Cvec <- drop( t(y) %*% x )
     ssy <- sum( y ^ 2 )
@@ -66,6 +81,7 @@ lars <- function(x, y)
 
     # GRAM is X'X
     Gram <- t(x) %*% x
+    R <- NULL
 
     beta <- matrix(0, maxK + 1, m)
 
@@ -96,9 +112,39 @@ lars <- function(x, y)
 
         for (inew in new)
         {
-            cholR <- updateR(Gram[inew, inew], R, drop(Gram[inew, active]),
+            # TODO: assuming use.Gram
+            R <- updateR(Gram[inew, inew], R, drop(Gram[inew, active]),
                              Gram = TRUE, eps = eps)
         }
+
+        if (attr(R, "rank") == length(active))
+        {
+            # if we've reached a singularity remove that variable
+            nR <- seq(length(active))
+            R <- R[nR, nR, drop = FALSE]
+            attr(R, "rank") <- length(active)
+            ignores <- c(ignores, inew)
+        } else
+        {
+            # TODO: could probably figure out a way to remove this part
+            #  if statements are slow and this is probably going to be off
+            #  for a long time
+            if (first.in[inew] == 0)
+            {
+                # First time the variable goes in
+                first.in[inew] <- k
+            }
+            active <- c(active, inew)
+            Sign <- c(Sign, sign(Cvec[inew]))
+        }
+
+        # TODO:  what is Gi1?
+        Gi1 <- backsolve(R, backsolvet(R, Sign))
+
+        # TODO: Ignore forward.stagewise method
+
+        A <- 1 / sqrt(sum( Gi1 * Sign))
+        w <- A * Gi1
 
 
 
