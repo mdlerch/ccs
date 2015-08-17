@@ -41,6 +41,7 @@
       names(normx) <- NULL
       x <- scale(x, FALSE, normx)	# scales x
       if(use.Gram & missing(Gram)) {
+      # if(use.Gram) {
           if(m > 500 && n < m)
               cat("There are more than 500 variables and n<m;\nYou may wish to restart and set use.Gram=FALSE\n"
                   )

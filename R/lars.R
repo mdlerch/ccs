@@ -121,7 +121,9 @@ lars <- function(x, y)
 
         A <- 1 / sqrt( sum( gActive_inv * Sign ) )
         w <- drop(A * gActive_inv)
-        u <- x[Active, ] * w
+        u <- x[, Active] %*% w
+
+        # TODO: not working
         a <- drop(t(x) %*% t(u))
 
 
