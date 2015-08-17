@@ -17,5 +17,3 @@ brute_cosso <- function(y, x, cost, savefunc = function(x) {summary(x)[["sigma"]
 
     list(vars = IN, scores = modelscore, costs = modelcost)
 }
-
-
