@@ -163,7 +163,8 @@ lars <- function(x, y)
         #TODO: assume use.Gam
         Cvec <- Cvec - gamhat * Gram[ , Active, drop = FALSE] %*% w
 
-        Gamrat <- 
+        Gamrat <- c(Gramrat, gamhat / (Cmax / A) )
+        arc.length <- c(arc.length, gamhat)
 
 
 
