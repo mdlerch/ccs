@@ -45,7 +45,34 @@ lars <- function(X, y)
         R <- choleski(Gram[A, A])
 
 
+        # TODO: figure out what is going on here!!!
+        GA1 <- backsolve(R, backsolvet(R, Signs))
+        AA <- 1 / sqrt(sum(GA1 * Signs))
+        w <- AA %*% GA1
+
+        # Equiangular vector
         u <- X[ , A] %*% w
+
+        # If all variables active go to lsq solution
+        if (nv == p)
+        {
+            gamma <- cvec / AA
+        } else
+        {
+            # eqn 2.11
+            a <- t(X) %*% u
+            # eqn 2.13
+            temp <- c( (cmax - cvec[Inactive]) / (AA - a[Inactive]),
+                       (cmax + cvec[Inactive]) / (AA + a[Inactive]) )
+            gamma <- min(temp[temp > eps], Cmax / AA)
+        }
+
+        # TODO: there is a lasso step here
+
+        # eqn 2.12
+        mu = mu + gamma  %*% u
+
+        # TODO: WTF is Cardi?  assume "empty"
 
 
 
