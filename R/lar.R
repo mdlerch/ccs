@@ -1,8 +1,28 @@
+
+backsolvet <- function(r, x, k)
+{
+    if(missing(k))
+        k <- nrow(r)
+    r <- t(r)[k:1, k:1, drop = F]
+    x <- as.matrix(x)[k:1,  , drop = F]
+    x <- backsolve(r, x)
+    drop(x[k:1,  ])
+}
+
+
+
 lars <- function(X, y)
 {
 
-    eps <- 1e-6
+    set.seed(3)
+    X <- matrix(rnorm(500), 50, 10)
+    b <- rnorm(10)
+    y <- X %*% b + rnorm(50)
 
+    X <- scale(X)
+    y <- y - mean(y)
+
+    eps <- 1e-6
 
     # variable setup
     n <- nrow(X)
@@ -17,12 +37,13 @@ lars <- function(X, y)
 
     # USE GRAM
     Gram <- t(X) %*% X
-
     lassocond <- FALSE
 
     k <- 0
     nv <- 0
     loop <- TRUE
+
+    beta <- matrix(0, nrow = p, ncol = maxk)
 
     while (nv < p & k < maxk & loop)
     {
@@ -42,8 +63,7 @@ lars <- function(X, y)
         Signs <- sign(cvec[Active])
 
         # TODO: watch out for really big stuff
-        R <- choleski(Gram[A, A])
-
+        R <- chol(Gram[Active, Active])
 
         # TODO: figure out what is going on here!!!
         GA1 <- backsolve(R, backsolvet(R, Signs))
@@ -51,7 +71,7 @@ lars <- function(X, y)
         w <- AA %*% GA1
 
         # Equiangular vector
-        u <- X[ , A] %*% w
+        u <- X[ , Active] %*% w
 
         # If all variables active go to lsq solution
         if (nv == p)
@@ -72,7 +92,17 @@ lars <- function(X, y)
         # eqn 2.12
         mu = mu + gamma  %*% u
 
-        # TODO: WTF is Cardi?  assume "empty"
+        # TODO: what is Cardi?  assume "empty" Assume stop == 0
+
+        beta <- beta[Active, k + 1] <- beta[Active, k] + gamma %*% w
+
+
+
+
+        # TODO: there is a lasso step here
+
+
+
 
 
 
