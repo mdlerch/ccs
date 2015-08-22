@@ -1,3 +1,7 @@
+x <- as.matrix(read.csv("./X.csv")[-1])
+y <- read.csv("./y.csv")$V1
+
+
 "lars" <-
   function(x, y, type = c("lasso", "lar", "forward.stagewise"), trace = FALSE, Gram, 
            eps = .Machine$double.eps,  max.steps, use.Gram = TRUE)
@@ -34,10 +38,10 @@
           ignores<-im[nosignal]
           inactive<-im[-ignores]
           normx[nosignal]<-eps*sqrt(n)
-          if(trace)
-              cat("LARS Step 0 :\t", sum(nosignal), "Variables with Variance < \eps; dropped for good\n")	#
+      } else
+      {
+          ignores <- NULL #singularities; augmented later as well
       }
-      else ignores <- NULL #singularities; augmented later as well
       names(normx) <- NULL
       x <- scale(x, FALSE, normx)	# scales x
       if(use.Gram & missing(Gram)) {
