@@ -15,7 +15,7 @@ n <- nm[1]
 m <- nm[2]
 im <- inactive <- seq(m)
 one <- rep(1, n)
-vn <- dimnames(x)[[2]]	
+vn <- dimnames(x)[[2]]
 ### Center x and y, and scale x, and save the means and sds
 if(intercept)
 {
@@ -87,6 +87,7 @@ R <- NULL	###
 ###
 
 k <- 0
+
 while((k < max.steps) & (length(active) < min(m - length(ignores),n-intercept)) )
 {
 
