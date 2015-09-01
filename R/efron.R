@@ -1,3 +1,6 @@
+# LARS (slightly adapted) from the R lars package
+
+
 x <- as.matrix(read.csv("./X.csv")[-1])
 y <- read.csv("./y.csv")$V1
 
