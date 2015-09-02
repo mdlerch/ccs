@@ -1,4 +1,4 @@
-lars <- function(x, y)
+mlars <- function(x, y)
 {
     eps <- 1e-6
 
