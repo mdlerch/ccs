@@ -1,9 +1,10 @@
-Package: anRpackage
+Package: cosso
 Type: Package
-Title: What the package does (short line)
-Version: 1.0
-Date: 2015-08-15
-Author: Who wrote it
-Maintainer: Who to complain to <yourfault@somewhere.net>
-Description: More about what it does (maybe more than one line)
-License: What license is it under?
+Title: Cost considerate model selection and regularization
+Version: 0.0.1
+Date: 2015-09-01
+Author: Michael Lerch
+Maintainer: Michael Lerch <mdlerch@gmail.com>
+Description: Build on top of Lars/Lasso/adaptive Lasso for cost considerate modeling
+License: MIT
+Imports: lars
