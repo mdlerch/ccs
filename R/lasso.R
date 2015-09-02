@@ -26,13 +26,12 @@ lassocond <- FALSE
 
 k <- 0
 nv <- 0
-loop <- TRUE
 
 # X <- scale(X)
 
 beta <- matrix(0, nrow = maxk, ncol = p)
 
-while (nv < p & k < maxk & loop)
+while (nv < p & k < maxk)
 {
     k <- k + 1
     cvec <- t(X) %*% (y - mu)
