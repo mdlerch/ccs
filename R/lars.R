@@ -4,7 +4,7 @@
 
 mlars <- function(x, y)
 {
-    eps <- 1e-6
+    eps <- .Machine$double.eps
 
     # variable setup
     n <- nrow(x)
@@ -62,7 +62,8 @@ mlars <- function(x, y)
         # If all variables active go to lsq solution
         if (nv == p)
         {
-            gamma <- (cvec / AA)[1]
+            # gamma <- (cvec / AA)[1]
+            beta[k + 1, Active] <- coef(lm(y ~ x - 1))
         } else
         {
             # eqn 2.11
@@ -73,17 +74,9 @@ mlars <- function(x, y)
             temp <- c( (cmax - cvec[Inactive]) / (AA - a[Inactive]),
                       (cmax + cvec[Inactive]) / (AA + a[Inactive]) )
             gamma <- min(temp[temp > eps], cmax / AA)
+            mu <- mu + gamma * u
+            beta[k + 1, Active] <- beta[k, Active] + gamma * w
         }
-
-        # TODO: there is a lasso step here
-
-        # eqn 2.12
-        mu <- mu + gamma * u
-
-        # TODO: what is Cardi?  assume "empty" Assume stop == 0
-
-        beta[k + 1, Active] <- beta[k, Active] + gamma * w
-
 
     }
 
