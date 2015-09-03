@@ -1,3 +1,7 @@
+# x <- as.matrix(read.csv("../X.csv"))[ , -1]
+# y <- as.matrix(read.csv("../y.csv"))[ , -1]
+# source("./util.R")
+
 mlars <- function(x, y)
 {
     eps <- 1e-6
@@ -37,12 +41,9 @@ mlars <- function(x, y)
 
         j <- abs(cvec) >= cmax - eps
 
-        if (!lassocond)
-        {
-            Active <- Active | j
-            Inactive <- !Active
-            nv <- nv + 1
-        }
+        Active <- Active | j
+        Inactive <- !Active
+        nv <- nv + 1
 
         Signs <- sign(cvec[Active])
 
@@ -61,7 +62,7 @@ mlars <- function(x, y)
         # If all variables active go to lsq solution
         if (nv == p)
         {
-            gamma <- cvec / AA
+            gamma <- (cvec / AA)[1]
         } else
         {
             # eqn 2.11
@@ -77,13 +78,14 @@ mlars <- function(x, y)
         # TODO: there is a lasso step here
 
         # eqn 2.12
-        mu = mu + gamma * u
+        mu <- mu + gamma * u
 
         # TODO: what is Cardi?  assume "empty" Assume stop == 0
 
         beta[k + 1, Active] <- beta[k, Active] + gamma * w
 
 
-        # TODO: there is a lasso step here
     }
+
+    beta[1:(k+1), ]
 }
