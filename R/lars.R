@@ -2,10 +2,8 @@
 # y <- as.matrix(read.csv("../y.csv"))[ , -1]
 # source("./util.R")
 
-mlars <- function(x, y, maxk = 1000)
+mlars <- function(x, y, maxk = 1000, eps = 1e-6)
 {
-    eps <- 0.001
-
     # variable setup
     n <- nrow(x)
     p <- ncol(x)
