@@ -2,15 +2,13 @@
 # y <- as.matrix(read.csv("../y.csv"))[ , -1]
 # source("./util.R")
 
-mlars <- function(x, y)
+mlars <- function(x, y, maxk = 1000)
 {
-    eps <- .Machine$double.eps
+    eps <- 0.001
 
     # variable setup
     n <- nrow(x)
     p <- ncol(x)
-
-    maxk <- 512 * p
 
     # current position
     mu <- rep(0, n)
@@ -31,7 +29,7 @@ mlars <- function(x, y)
 
     # x <- scale(x)
 
-    beta <- matrix(0, nrow = maxk, ncol = p)
+    beta <- matrix(0, nrow = maxk + 1, ncol = p)
 
     while (nv < p & k < maxk & loop)
     {
