@@ -8,8 +8,9 @@ mlars <- function(x, y, maxk = 1000, eps = 1e-6)
     n <- nrow(x)
     p <- ncol(x)
 
-    # current position
+    # current prediction
     mu <- rep(0, n)
+
     Inactive <- rep(TRUE, p)
     Active <- rep(FALSE, p)
 
@@ -19,28 +20,42 @@ mlars <- function(x, y, maxk = 1000, eps = 1e-6)
     # Not sure if there is some advantage to this, but I won't bother
 
     Gram <- t(x) %*% x
-    lassocond <- FALSE
 
+    # not used anywhere
+    # lassocond <- FALSE
+
+    # number lars iterations.  lars will do p steps.  number of lasso steps is
+    # not a fixed quantity
     k <- 0
+
+    # number of variables currently in model (for lars, equivalent to step
+    # number)
     nv <- 0
-    loop <- TRUE
 
     # x <- scale(x)
 
     beta <- matrix(0, nrow = maxk + 1, ncol = p)
 
-    while (nv < p & k < maxk & loop)
+    while (nv < p & k < maxk)
     {
         k <- k + 1
+
+        # find the correlations with residuals
         cvec <- t(x) %*% (y - mu)
+        # strongest correlation
         cmax <- max(abs(cvec))
 
+        # which variable(s) are most correlated?
         j <- abs(cvec) >= cmax - eps
 
+        # update Active and Inactive vectors
         Active <- Active | j
         Inactive <- !Active
+
+        # TODO: could this ever be greater than 1?
         nv <- nv + 1
 
+        # get correlation directions
         Signs <- sign(cvec[Active])
 
         # TODO: watch out for really big stuff
