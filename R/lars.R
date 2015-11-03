@@ -1,6 +1,6 @@
-# x <- as.matrix(read.csv("../X.csv"))[ , -1]
-# y <- as.matrix(read.csv("../y.csv"))[ , -1]
-# source("./util.R")
+x <- as.matrix(read.csv("./X.csv"))[ , -1]
+y <- as.matrix(read.csv("./y.csv"))[ , -1]
+source("./R/util.R")
 
 mlars <- function(x, y, maxk = 1000, eps = 1e-6)
 {
@@ -52,23 +52,32 @@ mlars <- function(x, y, maxk = 1000, eps = 1e-6)
         Active <- Active | j
         Inactive <- !Active
 
-        # TODO: could this ever be greater than 1?
+        # TODO: could the increment ever be greater than 1?
         nv <- nv + 1
 
         # get correlation directions
         Signs <- sign(cvec[Active])
 
-        # TODO: watch out for really big stuff
-        R <- chol(Gram[Active, Active])
+        # Equation 2.4
+        XA <- x[ , Active] * rep(1, n) %*% t.default(Signs)
+        # Equation 2.5
+        gA <- t(XA) %*% XA
+        one <- rep(1, sum(Active))
+        # Equation 2.5
+        AA <- 1/sqrt(one %*% solve(gA) %*% one)
+        # Equation 2.6
+        w <- AA %*% t(solve(gA) %*% one)
+        # Equation 2.6
+        u <- cbind(XA %*% t(w2)
 
-        # TODO: figure out what is going on here!!!
-        GA1 <- backsolve(R, backsolvet(R, Signs))
-        AA <- 1 / sqrt(sum(GA1 * Signs))
-        # eqn 2.6 b
-        w <- AA %*% GA1
 
-        # Equiangular vector
-        u <- x[ , Active] %*% t(w)
+        # old version?
+        # R <- chol(Gram[Active, Active])
+        # R
+        # GA1 <- backsolve(R, backsolvet(R, Signs))
+        # AA <- 1 / sqrt(sum(GA1 * Signs))
+        # w <- AA %*% GA1
+        # u <- x[ , Active] %*% t(w)
 
         # If all variables active go to lsq solution
         if (nv == p)
