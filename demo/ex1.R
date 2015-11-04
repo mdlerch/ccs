@@ -1,17 +1,23 @@
-n <- 20
-m <- 10
+library(cosso)
+library(lars)
 
-set.seed(19)
-X <- matrix(rnorm(n * m), m, n)
-coeff <- runif(n, -5, 5)
-y <- X %*% coeff + rnorm(m, 3)
-costvec <- runif(n, 1, 10)
+data(diabetes)
 
-source("../R/brute.R")
+y <- diabetes$y
+x <- scale(diabetes$x)
 
-out <- brute_cosso(y, X, costvec)
+lfit <- lars(x = x, y = y, type = "lar")
+lfit$beta
+lfit$mu
 
-plot(out$scores ~ out$costs)
+lfit.mu <- predict.lars(lfit, newx = x, type = "fit")$fit
+
+mfit <- mlars(x = x, y = y)
+mfit[[2]][ , 1]
 
 
+sum(abs(lfit$beta - mfit))
+apply(lfit$beta - mfit, 1, sum)
 
+
+all.equal(lfit$beta, mfit)

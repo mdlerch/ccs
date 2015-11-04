@@ -1,9 +1,20 @@
-x <- as.matrix(read.csv("./X.csv"))[ , -1]
-y <- as.matrix(read.csv("./y.csv"))[ , -1]
-source("./R/util.R")
+# x <- as.matrix(read.csv("./X.csv"))[ , -1]
+# y <- as.matrix(read.csv("./y.csv"))[ , -1]
+
+# source("./R/util.R")
+
+library(lars)
+data(diabetes)
+x <- scale(diabetes$x)
+y <- diabetes$y
+maxk <- 15
+eps <- 1e-9
+
+
 
 mlars <- function(x, y, maxk = 1000, eps = 1e-6)
 {
+    x <- scale(x)
     # variable setup
     n <- nrow(x)
     p <- ncol(x)
@@ -14,15 +25,7 @@ mlars <- function(x, y, maxk = 1000, eps = 1e-6)
     Inactive <- rep(TRUE, p)
     Active <- rep(FALSE, p)
 
-    # USE GRAM
-    # x <- x / sqrt(n - 1)
-    # lars packages converts x to this norm then undo's when returning.
-    # Not sure if there is some advantage to this, but I won't bother
-
     Gram <- t(x) %*% x
-
-    # not used anywhere
-    # lassocond <- FALSE
 
     # number lars iterations.  lars will do p steps.  number of lasso steps is
     # not a fixed quantity
@@ -32,9 +35,9 @@ mlars <- function(x, y, maxk = 1000, eps = 1e-6)
     # number)
     nv <- 0
 
-    # x <- scale(x)
 
     beta <- matrix(0, nrow = maxk + 1, ncol = p)
+    mul <- matrix(0, nrow = maxk + 1, ncol = n)
 
     while (nv < p & k < maxk)
     {
@@ -60,25 +63,25 @@ mlars <- function(x, y, maxk = 1000, eps = 1e-6)
 
         Signs <- sign(cvec[Active])
         # Equation 2.4
-        XA <- x[ , Active] * rep(1, n) %*% t.default(Signs)
+        XA <- x[ , Active] * rep(1, n) %*% t(Signs)
         # Equation 2.5
         gA <- t(XA) %*% XA
         one <- rep(1, sum(Active))
         # Equation 2.5
         AA <- 1/sqrt(one %*% solve(gA) %*% one)
-        # Equation 2.6
+        # Equation 2.6 NOTE add the Signs to match package
         w <- AA %*% t(solve(gA) %*% one)
         # Equation 2.6
-        u <-XA %*% t(w)
+        u <- XA %*% t(w)
 
         # 2. Find unit-vector of equal projection.
+
         # This is another method to do step 2, may be more efficient than above.
         # R <- chol(Gram[Active, Active])
-        # R
         # GA1 <- backsolve(R, backsolvet(R, Signs))
-        # AA <- 1 / sqrt(sum(GA1 * Signs))
-        # w <- AA %*% GA1
-        # u <- x[ , Active] %*% t(w)
+        # AA2 <- 1 / sqrt(sum(GA1 * Signs))
+        # w2 <- AA2 %*% GA1
+        # u2 <- x[ , Active] %*% t(w2)
 
         # 3. Increment model fit in the direction of u.
         #  New estimate will be mu + \gamma * u where \gamma is large enough
@@ -87,7 +90,7 @@ mlars <- function(x, y, maxk = 1000, eps = 1e-6)
         if (nv == p)
         {
             # cheat and just use OLS
-            beta[k + 1, Active] <- coef(lm(y ~ x - 1))
+            # beta[k + 1, Active] <- coef(lm(y ~ x - 1))
         } else
         {
             # Equation 2.11
@@ -98,9 +101,10 @@ mlars <- function(x, y, maxk = 1000, eps = 1e-6)
             gamma <- min(temp[temp > eps], cmax / AA)
             mu <- mu + gamma * u
             beta[k + 1, Active] <- beta[k, Active] + gamma * w
+            mul[k + 1, ] <- mu
         }
 
     }
 
-    return( beta[1:(k+1), ] )
+    return( list(beta = beta[1:(k + 1), ], fit = mul) )
 }
