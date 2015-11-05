@@ -1,8 +1,6 @@
 library(cosso)
 library(lars)
-
 data(diabetes)
-
 y <- diabetes$y
 x <- scale(diabetes$x)
 
@@ -13,7 +11,9 @@ lfit$mu
 lfit.mu <- predict.lars(lfit, newx = x, type = "fit")$fit
 
 mfit <- mlars(x = x, y = y)
-mfit[[2]][ , 1]
+mfit <- mfit[[1]]
+
+zapsmall(lfit$beta - mfit)
 
 
 sum(abs(lfit$beta - mfit))

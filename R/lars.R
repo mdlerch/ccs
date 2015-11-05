@@ -90,7 +90,7 @@ mlars <- function(x, y, maxk = 1000, eps = 1e-6)
         if (nv == p)
         {
             # cheat and just use OLS
-            # beta[k + 1, Active] <- coef(lm(y ~ x - 1))
+            beta[k + 1, Active] <- coef(lm(y ~ x - 1))
         } else
         {
             # Equation 2.11
