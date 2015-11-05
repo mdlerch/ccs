@@ -100,7 +100,7 @@ mlars <- function(x, y, maxk = 1000, eps = 1e-6)
                       (cmax + cvec[Inactive]) / (AA + a[Inactive]))
             gamma <- min(temp[temp > eps], cmax / AA)
             mu <- mu + gamma * u
-            beta[k + 1, Active] <- beta[k, Active] + gamma * w
+            beta[k + 1, Active] <- beta[k, Active] + gamma * w * Signs
             mul[k + 1, ] <- mu
         }
 
