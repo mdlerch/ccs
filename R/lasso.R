@@ -73,23 +73,19 @@ mlasso <- function(x, y, maxk = 1000, eps = 1e-6)
         #  New estimate will be mu + \gamma * u where \gamma is large enough
         #  such that the next input variable will now be equally correlated.
 
-        if (nv == p)
-        {
-            # cheat and just use OLS
-            beta[k + 1, Active] <- coef(lm(y ~ x - 1))
-        } else
-        {
-            # Equation 2.11
-            a <- t(x) %*% u
-            # Equation 2.13
-            temp <- c((cmax - cvec[Inactive]) / (AA - a[Inactive]),
-                      (cmax + cvec[Inactive]) / (AA + a[Inactive]))
-            gamma <- min(temp[temp > eps], cmax / AA)
-            mu <- mu + gamma * u
-            beta[k + 1, Active] <- beta[k, Active] + gamma * w * Signs
-            mul[k + 1, ] <- mu
-        }
+        # Equation 2.11
+        a <- t(x) %*% u
+        # Equation 2.13
+        temp <- c((cmax - cvec[Inactive]) / (AA - a[Inactive]),
+                  (cmax + cvec[Inactive]) / (AA + a[Inactive]))
+        gamma <- min(temp[temp > eps], cmax / AA)
 
+        gammaj <- - beta[k, Active] / (w * Signs)
+        gamma.tilde <- which.min(gammaj)
+
+        mu <- mu + gamma * u
+        beta[k + 1, Active] <- beta[k, Active] + gamma * w * Signs
+        mul[k + 1, ] <- mu
     }
 
     return( list(beta = beta[1:(k + 1), ], fit = mul) )
