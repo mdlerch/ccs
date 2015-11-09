@@ -13,6 +13,7 @@ lfit.mu <- predict.lars(lfit, newx = x, type = "fit")$fit
 mfit <- mlars(x = x, y = y)
 mfit <- mfit[[1]]
 
+
 zapsmall(lfit$beta - mfit)
 
 
@@ -21,3 +22,11 @@ apply(lfit$beta - mfit, 1, sum)
 
 
 all.equal(lfit$beta, mfit)
+
+lafit <- lars(x = x, y = y, type = "lasso")
+lafit$beta
+
+mafit <- mlasso(x = x, y = y)
+mafit
+
+lafit$beta[13, ] - mafit[12, ]

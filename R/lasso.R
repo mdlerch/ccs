@@ -80,13 +80,27 @@ mlasso <- function(x, y, maxk = 1000, eps = 1e-6)
                   (cmax + cvec[Inactive]) / (AA + a[Inactive]))
         gamma <- min(temp[temp > eps], cmax / AA)
 
-        gammaj <- - beta[k, Active] / (w * Signs)
-        gamma.tilde <- which.min(gammaj)
+        gammaj <- rep(1000000, p)
+        gammaj[Active] <- - beta[k, Active] / (w * Signs)
+
+        js <- which(gammaj > 0)
+
+        if (length(js) > 0)
+        {
+            gamma.tilde <- min(gammaj[js])
+            if (gamma.tilde < gamma)
+            {
+                gamma <- gamma.tilde
+                out <- which(gamma == gammaj)
+                nv <- nv - 1
+            }
+        }
 
         mu <- mu + gamma * u
         beta[k + 1, Active] <- beta[k, Active] + gamma * w * Signs
         mul[k + 1, ] <- mu
+
     }
 
-    return( list(beta = beta[1:(k + 1), ], fit = mul) )
+    return(beta[1:(k + 1), ])
 }

@@ -106,5 +106,5 @@ mlars <- function(x, y, maxk = 1000, eps = 1e-6)
 
     }
 
-    return( list(beta = beta[1:(k + 1), ], fit = mul) )
+    return(beta = beta[1:(k + 1), ])
 }

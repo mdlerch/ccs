@@ -5,15 +5,15 @@ data(diabetes)
 x <- scale(diabetes$x)
 y <- diabetes$y
 
-type = "lar"
-trace = FALSE
+type = "lasso"
+trace = TRUE
 use.Gram = TRUE
 eps <- .Machine$double.eps
 max.steps = 15
 
 
 
-"lars" <-
+"efflars" <-
   function(x, y, type = c("lasso", "lar", "forward.stagewise"), trace = FALSE, Gram, 
            eps = .Machine$double.eps,  max.steps, use.Gram = TRUE)
   {
