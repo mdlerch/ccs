@@ -21,9 +21,11 @@ mlasso <- function(x, y, maxk = 1000, eps = 1e-6)
     # number)
     nv <- 0
 
-
     beta <- matrix(0, nrow = maxk + 1, ncol = p)
     mul <- matrix(0, nrow = maxk + 1, ncol = n)
+
+    # Doing a lasso step?
+    lass <- FALSE
 
     while (nv < p & k < maxk)
     {
@@ -37,12 +39,19 @@ mlasso <- function(x, y, maxk = 1000, eps = 1e-6)
 
         # Equation 2.8
         cvec <- t(x) %*% (y - mu)
-        # Equation 2.9
-        cmax <- max(abs(cvec))
-        j <- abs(cvec) >= cmax - eps
-        Active <- Active | j
-        Inactive <- !Active
-        nv <- nv + 1
+        if (lass)
+        {
+            cmax <- max(abs(cvec[-out]))
+            Active[out] <- FALSE
+            Inactive <- !Active
+        } else {
+            # Equation 2.9
+            cmax <- max(abs(cvec))
+            j <- abs(cvec) >= cmax - eps
+            Active <- Active | j
+            Inactive <- !Active
+            nv <- nv + 1
+        }
 
         # 2. Find unit-vector of equal projection.
         # Following equations 2.4 through 2.6
@@ -85,6 +94,7 @@ mlasso <- function(x, y, maxk = 1000, eps = 1e-6)
 
         js <- which(gammaj > 0)
 
+        lass <- FALSE
         if (length(js) > 0)
         {
             gamma.tilde <- min(gammaj[js])
@@ -93,6 +103,7 @@ mlasso <- function(x, y, maxk = 1000, eps = 1e-6)
                 gamma <- gamma.tilde
                 out <- which(gamma == gammaj)
                 nv <- nv - 1
+                lass <- TRUE
             }
         }
 

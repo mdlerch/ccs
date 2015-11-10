@@ -23,7 +23,7 @@ apply(lfit$beta - mfit, 1, sum)
 
 all.equal(lfit$beta, mfit)
 
-lafit <- lars(x = x, y = y, type = "lasso")
+lafit <- lars(x = x, y = y, type = "lasso", trace = TRUE)
 lafit$beta
 
 mafit <- mlasso(x = x, y = y)

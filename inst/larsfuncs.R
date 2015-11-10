@@ -30,8 +30,7 @@ function(x, y, K = 10, fraction = seq(from = 0, to = 1, length = 100),
   if(plot.it) plotCVLars(object,se=se)
   invisible(object)
 }
-"downdateR" <-
-function(R, k = p)
+"downdateR" <- function(R, k = p)
 {
 	p <- dim(R)[1]
 	if(p == 1)
