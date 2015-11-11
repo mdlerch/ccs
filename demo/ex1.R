@@ -29,4 +29,4 @@ lafit$beta
 mafit <- mlasso(x = x, y = y)
 mafit
 
-lafit$beta[13, ] - mafit[12, ]
+lafit$beta - mafit
