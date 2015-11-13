@@ -1,3 +1,5 @@
+library(lqa)
+library(parcor)
 library(cosso)
 library(lars)
 data(diabetes)
@@ -30,3 +32,9 @@ mafit <- mlasso(x = x, y = y)
 mafit
 
 lafit$beta - mafit
+
+mwlasso(x = x, y = y)
+
+adafit <- adalasso(X = x, y = y, intercept = FALSE)
+
+
