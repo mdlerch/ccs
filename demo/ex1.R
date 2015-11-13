@@ -36,5 +36,3 @@ lafit$beta - mafit
 mwlasso(x = x, y = y)
 
 adafit <- adalasso(X = x, y = y, intercept = FALSE)
-
-
