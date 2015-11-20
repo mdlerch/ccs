@@ -10,6 +10,7 @@ lfit <- lars(x = x, y = y, type = "lar")
 lfit$beta
 lfit$mu
 
+
 lfit.mu <- predict.lars(lfit, newx = x, type = "fit")$fit
 
 mfit <- mlars(x = x, y = y)
@@ -27,6 +28,10 @@ all.equal(lfit$beta, mfit)
 
 lafit <- lars(x = x, y = y, type = "lasso", trace = TRUE)
 lafit$beta
+
+plafit <- predict(lafit, x)
+plafit
+str(plafit)
 
 mafit <- mlasso(x = x, y = y)
 mafit
