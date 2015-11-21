@@ -36,6 +36,9 @@ str(plafit)
 mafit <- mlasso(x = x, y = y)
 mafit
 
+obj <- list(betas = mafit)
+predictlars(obj, x, 1.4)
+
 lafit$beta - mafit
 
 mwlasso(x = x, y = y)
