@@ -1,46 +1,17 @@
-library(lqa)
-library(parcor)
 library(cosso)
 library(lars)
 data(diabetes)
 y <- diabetes$y
 x <- scale(diabetes$x)
 
-lfit <- lars(x = x, y = y, type = "lar")
-lfit$beta
-lfit$mu
+larsfit <- lars(x = x, y = y, type = "lar")
+lassfit <- lars(x = x, y = y, type = "lasso")
+mlarsfit <- mlars(x = x, y = y)
+mlassfit <- mlasso(x = x, y = y)
 
+predictlars(mlarsfit, x, 1.4)
+predict.lars(larsfit, x, s = 1.4, type = "coef", mode = "step")$coef
 
-lfit.mu <- predict.lars(lfit, newx = x, type = "fit")$fit
-
-mfit <- mlars(x = x, y = y)
-mfit <- mfit[[1]]
-
-
-zapsmall(lfit$beta - mfit)
-
-
-sum(abs(lfit$beta - mfit))
-apply(lfit$beta - mfit, 1, sum)
-
-
-all.equal(lfit$beta, mfit)
-
-lafit <- lars(x = x, y = y, type = "lasso", trace = TRUE)
-lafit$beta
-
-plafit <- predict(lafit, x)
-plafit
-str(plafit)
-
-mafit <- mlasso(x = x, y = y)
-mafit
-
-obj <- list(betas = mafit)
-predictlars(obj, x, 1.4)
-
-lafit$beta - mafit
-
-mwlasso(x = x, y = y)
-
-adafit <- adalasso(X = x, y = y, intercept = FALSE)
+# TODO: lasso predictions not working
+predictlasso(mlassfit, x, 1500 / 21)
+predict.lars(lassfit, x, s = 1500, type = "coef", mode = "norm")$coef

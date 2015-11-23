@@ -1,6 +1,6 @@
 predictlars <- function(object, x, s)
 {
-    betas <- object$betas
+    betas <- object$beta
 
     k <- nrow(betas)
 

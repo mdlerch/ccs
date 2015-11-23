@@ -113,5 +113,5 @@ mlasso <- function(x, y, maxk = 1000, eps = 1e-6)
 
     }
 
-    return(beta[1:(k + 1), ])
+    list(beta = beta[1:(k + 1), ])
 }

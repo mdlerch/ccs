@@ -1,6 +1,6 @@
 predictlasso <- function(object, x, s)
 {
-    betas <- object$betas
+    betas <- object$beta
 
     k <- nrow(betas)
 
@@ -14,7 +14,7 @@ predictlasso <- function(object, x, s)
 
     if (!(s %in% norms))
     {
-        sorted <- sort(s, norms)
+        sorted <- sort(c(s, norms))
         i <- which(s == sorted) - 1
         f <- i + 1
         beta.i <- betas[i, ]
