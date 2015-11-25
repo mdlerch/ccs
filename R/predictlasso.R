@@ -4,7 +4,7 @@ predictlasso <- function(object, x, s)
 
     k <- nrow(betas)
 
-    norms <- apply(betas, 1, function(x) sum(abs(x)))
+    norms <- apply(abs(betas), 1, sum)
 
     if (s < norms[1] || s > norms[k])
     {
@@ -20,11 +20,17 @@ predictlasso <- function(object, x, s)
         beta.i <- betas[i, ]
         beta.f <- betas[f, ]
 
-        frac <- s - i
+        m <- (beta.f - beta.i) / (norms[f] - norms[i])
 
-        m <- beta.f - beta.i
+        frac <- s - norms[i]
 
         # y = m * x + b
+
+        # dx1 <- s - norms[i]
+        # dx2 <- norms[f] - s
+        # dx <- norms[f] - norms[i]
+        # beta.out <- dx2 / dx * beta.i + dx1 / dx * beta.f
+
         beta.out <- m * frac + beta.i
 
     } else {
