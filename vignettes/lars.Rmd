@@ -4,25 +4,105 @@ author: Michael Lerch
 output: pdf_document
 ---
 
+In Words
+========
+
 Step 0
-======
+------
 
 Center and standardize all $x$ and $y$.
 Set $\mu = \mathbf{0}$ (i.e. predict $y_i=0$ for all $i$).
 Find residuals as $y - \mu$
 
 Step 1
-======
+------
 
 Find $x_{j'}$ that is not currently used yet that is most correlated with
 residuals, $r = y- \mu$.
 
 Step 2
-======
+------
 
 Append to the active set $\mathcal{A}$, $j'$ (from above).  Find the unit vector $u$ that is equiangular with all $x_j$ with $j \in \mathcal{A}$.
 
 Step 3
-======
+------
 
 Update $\mu$ to be $\mu = \mu + \gamma u$ with $\gamma$ large enough until a new $j'$ with $x_{j'}$ equally correlated with residuals as $x_j$ with $j \in \mathcal{A}$.
+
+Repeat
+------
+
+Repeat 1 through 3 until all variables added: result is OLS.
+
+In Pictures
+===========
+
+TODO
+
+In Linear Algebra
+=================
+
+Step 0
+------
+
+Trivial
+
+Step 1
+------
+
+Trivial
+
+Step 2
+------
+
+The vector $u$ is the one such that the dot product of each $x_j$ with $u$ for $j \in \mathcal{A}$ are all equal to the same value.
+Let's call that value $A$.
+Let's consider $X$ to be the matrix whose columns are the aforementioned $x_j$.
+This allows us
+
+TODO: formatting broken
+
+$$ X' u = A \mathbb{ONE} $$
+
+Where $\mathbb{ONE}$ is a vector of 1's.
+
+Now do some intelligent multiplication and note that $H$ is the Hat Matrix and that $Hu = u$ since we want the $u$ that already is in the column space of $X$.
+Further, $u'u = 1$ since it is a unit vector.
+
+\begin{align*}
+X' u &= A \mathbb{ONE} \\
+(X'X)^{-1} X' u &= (X'X)^{-1}A \mathbb{ONE} \\
+u'X(X'X)^{-1} X' u &= A\mathbb{ONE}'(X'X)^{-1}A \mathbb{ONE} \\
+u'H u &= A\mathbb{ONE}'(X'X)^{-1}A \mathbb{ONE} \\
+u'u &= A\mathbb{ONE}'(X'X)^{-1}A \mathbb{ONE} \\
+1 &= A^2\mathbb{ONE}'(X'X)^{-1} \mathbb{ONE} \\
+A^2 &= (\mathbb{ONE}'(X'X)^{-1}\mathbb{ONE})^{-1} \\
+A &= (\mathbb{ONE}'(X'X)^{-1}\mathbb{ONE})^{-1/2} \\
+\end{align*}
+
+So, $A$ is solved.
+To get $u$, start with $u = Hu$
+
+\begin{align*}
+u &= Hu \\
+u &= X(X'X)^{-1}X'u \\
+u &= X(X'X)^{-1}A\mathbb{ONE} \\
+u &= XA(X'X)^{-1}\mathbb{ONE} \\
+\end{align*}
+
+The last line is the _typical_ notation.
+
+
+
+
+
+Step 3
+------
+
+
+
+
+Efficiency
+==========
+
