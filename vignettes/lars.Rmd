@@ -93,12 +93,18 @@ u &= XA(X'X)^{-1}\mathbb{ONE} \\
 
 The last line is the _typical_ notation.
 
-
-
-
-
 Step 3
 ------
+
+To find $\gamma$, consider the function of possible new $\mu$'s defined as $\mu(\gamma} = \mu + \gamma u$.
+For $\mu(\gamma)$, the new residual will be $y - \mu(\gamma) = y - \mu - \gamma u$.
+
+For some $x_j$, the new correlation is $x_j'(y-\mu) - x_j\gamma u$.
+The first term is the "old" correlation.
+Since all 
+
+
+
 
 
 
