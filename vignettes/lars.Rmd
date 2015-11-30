@@ -1,0 +1,28 @@
+---
+title: LARS and CLARS fitting algorithms
+author: Michael Lerch
+output: pdf_document
+---
+
+Step 0
+======
+
+Center and standardize all $x$ and $y$.
+Set $\mu = \mathbf{0}$ (i.e. predict $y_i=0$ for all $i$).
+Find residuals as $y - \mu$
+
+Step 1
+======
+
+Find $x_{j'}$ that is not currently used yet that is most correlated with
+residuals, $r = y- \mu$.
+
+Step 2
+======
+
+Append to the active set $\mathcal{A}$, $j'$ (from above).  Find the unit vector $u$ that is equiangular with all $x_j$ with $j \in \mathcal{A}$.
+
+Step 3
+======
+
+Update $\mu$ to be $\mu = \mu + \gamma u$ with $\gamma$ large enough until a new $j'$ with $x_{j'}$ equally correlated with residuals as $x_j$ with $j \in \mathcal{A}$.
