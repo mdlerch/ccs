@@ -96,12 +96,35 @@ The last line is the _typical_ notation.
 Step 3
 ------
 
-To find $\gamma$, consider the function of possible new $\mu$'s defined as $\mu(\gamma} = \mu + \gamma u$.
+To find $\gamma$, consider the function of possible new $\mu$'s defined as $\mu(\gamma) = \mu + \gamma u$.
 For $\mu(\gamma)$, the new residual will be $y - \mu(\gamma) = y - \mu - \gamma u$.
 
 For some $x_j$, the new correlation is $x_j'(y-\mu) - x_j\gamma u$.
 The first term is the "old" correlation.
-Since all 
+Since all $j \in \mathcal{A}$ are equally correlated on the old step, we can call $x_j'(y - \mu) = C$ and we thus see that the correlation changes equally for each of these variables.
+Also, note that for these $j$, $x_j u = A$ (from above).
+So, we should cut off $\gamma$ when there is a $j'$ with
+
+$$x_{j'}'(y-\mu) - x_{j'}'\gamma u = C - \gamma A$$
+
+And so,
+
+\begin{align*}
+x_{j'}'(y-\mu) - x_{j'}'\gamma u &= C - \gamma A \\
+c_{j'} - x_{j'}'\gamma u &= C - \gamma A \\
+C - c_{j'} &= \gamma(A - x_{j'}'\gamma u) \\
+\gamma &= \frac{C - c_{j'}}{A - x_{j'}'\gamma u} \\
+\end{align*}
+
+There is another solution, however, for the case that the correlation is in the opposite sign:
+
+$$ \gamma = \frac{C - c_{j'}}{A - x_{j'}'\gamma u} $$
+
+So, we choose $\gamma$ to be
+
+$$\gamma = \min\left(\frac{C - c_{j'}}{A - x_{j'}'\gamma u},\frac{C - c_{j'}}{A - x_{j'}'\gamma u}\right)$$
+
+
 
 
 
