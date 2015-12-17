@@ -19,6 +19,12 @@ clars <- function(x, y, cost, maxk = 1000, eps = 1e-6)
     n <- nrow(x)
     p <- ncol(x)
 
+    if missing(cost)
+    {
+        cost <- rep(1, p)
+    }
+
+
     # current prediction
     mu <- rep(0, n)
 
@@ -51,6 +57,10 @@ clars <- function(x, y, cost, maxk = 1000, eps = 1e-6)
 
         # Equation 2.8
         cvec <- t(x) %*% (y - mu)
+
+        # convert to cost per
+        cvec <- cvec / cost * Inactive
+
         # Equation 2.9
         cmax <- max(abs(cvec))
         j <- abs(cvec) >= cmax - eps
