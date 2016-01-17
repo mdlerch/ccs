@@ -28,6 +28,12 @@ clars <- function(x, y, cost, maxk = 1000, eps = 1e-6)
     # current prediction
     mu <- rep(0, n)
 
+    r <- y - mu
+    C <- t(x) %*% r / sd(r) / (n - 1)
+
+    CM <- max(abs(C))
+    p <- cost * CM
+
     Inactive <- rep(TRUE, p)
     Active <- rep(FALSE, p)
 
@@ -58,12 +64,12 @@ clars <- function(x, y, cost, maxk = 1000, eps = 1e-6)
         # Equation 2.8
         cvec <- t(x) %*% (y - mu)
 
-        # convert to cost per
-        cvec <- cvec / cost * Inactive
+        # score vector
+        svec <- cvec - p
 
         # Equation 2.9
-        cmax <- max(abs(cvec))
-        j <- abs(cvec) >= cmax - eps
+        smax <- max(abs(svec))
+        j <- abs(svec) >= smax - eps
         Active <- Active | j
         Inactive <- !Active
         nv <- nv + 1
@@ -106,8 +112,10 @@ clars <- function(x, y, cost, maxk = 1000, eps = 1e-6)
             # Equation 2.11
             a <- t(x) %*% u
             # Equation 2.13
-            temp <- c((cmax - cvec[Inactive]) / (AA - a[Inactive]),
-                      (cmax + cvec[Inactive]) / (AA + a[Inactive]))
+            temp <- c((smax - svec[Inactive]) / (AA - a[Inactive]),
+                      (smax - svec[Inactive]) / (AA - a[Inactive]))
+                    # TODO: skipping negative side for now.
+                    #  (cmax + cvec[Inactive]) / (AA + a[Inactive])
             gamma <- min(temp[temp > eps], cmax / AA)
             mu <- mu + gamma * u
             beta[k + 1, Active] <- beta[k, Active] + gamma * w * Signs
