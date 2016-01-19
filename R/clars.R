@@ -10,6 +10,7 @@ y <- diabetes$y
 maxk <- 15
 eps <- 1e-9
 
+clars(x, y)
 
 
 clars <- function(x, y, cost, maxk = 1000, eps = 1e-6)
@@ -19,7 +20,7 @@ clars <- function(x, y, cost, maxk = 1000, eps = 1e-6)
     n <- nrow(x)
     p <- ncol(x)
 
-    if missing(cost)
+    if (missing(cost))
     {
         cost <- rep(1, p)
     }
@@ -32,7 +33,7 @@ clars <- function(x, y, cost, maxk = 1000, eps = 1e-6)
     C <- t(x) %*% r / sd(r) / (n - 1)
 
     CM <- max(abs(C))
-    p <- cost * CM
+    price <- cost * CM
 
     Inactive <- rep(TRUE, p)
     Active <- rep(FALSE, p)
@@ -65,7 +66,7 @@ clars <- function(x, y, cost, maxk = 1000, eps = 1e-6)
         cvec <- t(x) %*% (y - mu)
 
         # score vector
-        svec <- cvec - p
+        svec <- cvec - price
 
         # Equation 2.9
         smax <- max(abs(svec))
@@ -106,17 +107,20 @@ clars <- function(x, y, cost, maxk = 1000, eps = 1e-6)
         if (nv == p)
         {
             # cheat and just use OLS
-            beta[k + 1, Active] <- coef(lm(y ~ x - 1))
+            # beta[k + 1, Active] <- coef(lm(y ~ x - 1))
         } else
         {
             # Equation 2.11
             a <- t(x) %*% u
             # Equation 2.13
+
+            # TODO: should do this with cvec to more easily account for neg sign
             temp <- c((smax - svec[Inactive]) / (AA - a[Inactive]),
                       (smax - svec[Inactive]) / (AA - a[Inactive]))
                     # TODO: skipping negative side for now.
                     #  (cmax + cvec[Inactive]) / (AA + a[Inactive])
-            gamma <- min(temp[temp > eps], cmax / AA)
+            # TODO what is cmax / AA option?
+            gamma <- min(temp[temp > eps])
             mu <- mu + gamma * u
             beta[k + 1, Active] <- beta[k, Active] + gamma * w * Signs
             mul[k + 1, ] <- mu

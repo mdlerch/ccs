@@ -34,7 +34,7 @@ SM <- S[idx]
 
 u <- x[ , idx]
 
-for (gam in seq(0, 100, 10))
+for (gam in seq(0, 10, 1))
 {
     rp <- r - u * gam
     cp <- t(x) %*% rp / sd(rp) / (n - 1)
