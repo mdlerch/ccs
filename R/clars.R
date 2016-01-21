@@ -1,4 +1,4 @@
-clars <- function(x, y, cost, maxk = 1000, eps = 1e-6)
+clars <- function(x, y, cost, maxk = 1000, eps = 1e-6, trace = TRUE)
 {
     x <- scale(x)
     # variable setup
@@ -9,6 +9,8 @@ clars <- function(x, y, cost, maxk = 1000, eps = 1e-6)
     {
         cost <- rep(1, p)
     }
+
+    cost <- cost / sum(cost)
 
 
     # current prediction
@@ -47,17 +49,36 @@ clars <- function(x, y, cost, maxk = 1000, eps = 1e-6)
         # TODO: is it possible that more than one variable could be added?
 
         # Equation 2.8
-        cvec <- t(x) %*% (y - mu)
+        r <- y - mu
+        # cvec <- t(x) %*% r / sd(r) / (n - 1)
+        cvec <- t(x) %*% r
+        price <- cost * max(cvec)
+
 
         # score vector
-        svec <- cvec - price
+        svec <- abs(cvec) - price
+
+        if (trace)
+        {
+            cat("\nIteration: ")
+            cat(k)
+            cat("\n")
+            print(cbind(cvec, svec))
+        }
 
         # Equation 2.9
-        smax <- max(abs(svec))
-        j <- abs(svec) >= smax - eps
+        smax <- max(svec)
+        j <- svec >= smax - eps
         Active <- Active | j
         Inactive <- !Active
         nv <- nv + 1
+
+        if (trace)
+        {
+            cat("selected: ")
+            cat(colnames(x)[j])
+            cat("\n")
+        }
 
         # 2. Find unit-vector of equal projection.
         # Following equations 2.4 through 2.6
@@ -69,20 +90,11 @@ clars <- function(x, y, cost, maxk = 1000, eps = 1e-6)
         gA <- t(XA) %*% XA
         one <- rep(1, sum(Active))
         # Equation 2.5
-        AA <- 1/sqrt(one %*% solve(gA) %*% one)
+        AA <- 1 / sqrt(one %*% solve(gA) %*% one)
         # Equation 2.6 NOTE add the Signs to match package
         w <- AA %*% t(solve(gA) %*% one)
         # Equation 2.6
         u <- XA %*% t(w)
-
-        # 2. Find unit-vector of equal projection.
-
-        # This is another method to do step 2, may be more efficient than above.
-        # R <- chol(Gram[Active, Active])
-        # GA1 <- backsolve(R, backsolvet(R, Signs))
-        # AA2 <- 1 / sqrt(sum(GA1 * Signs))
-        # w2 <- AA2 %*% GA1
-        # u2 <- x[ , Active] %*% t(w2)
 
         # 3. Increment model fit in the direction of u.
         #  New estimate will be mu + \gamma * u where \gamma is large enough
@@ -98,13 +110,25 @@ clars <- function(x, y, cost, maxk = 1000, eps = 1e-6)
             a <- t(x) %*% u
             # Equation 2.13
 
-            # TODO: should do this with cvec to more easily account for neg sign
             temp <- c((smax - svec[Inactive]) / (AA - a[Inactive]),
-                      (smax - svec[Inactive]) / (AA - a[Inactive]))
-                    # TODO: skipping negative side for now.
-                    #  (cmax + cvec[Inactive]) / (AA + a[Inactive])
+                    (smax + cvec[Inactive] + price[Inactive]) / (AA - a[Inactive]))
             # TODO what is cmax / AA option?
+
             gamma <- min(temp[temp > eps])
+            if (trace)
+            {
+                cat("gamma: ")
+                cat(which(temp == gamma))
+                cat(" ")
+                cat(gamma)
+                cat("\nNew score: ")
+                cat(smax - gamma * AA)
+                cat("\nsmax: ")
+                cat(smax)
+                cat("\nnextmax: ")
+                cat(max(svec[Inactive]))
+                cat("\n")
+            }
             mu <- mu + gamma * u
             beta[k + 1, Active] <- beta[k, Active] + gamma * w * Signs
             mul[k + 1, ] <- mu

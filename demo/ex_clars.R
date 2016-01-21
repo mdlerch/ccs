@@ -15,6 +15,8 @@ set.seed(42)
 cost <- round(runif(p, 1, 10))
 price <- cost / max(cost)
 
+clars(x, y)
+
 mu <- rep(0, n)
 
 r <- y - mu

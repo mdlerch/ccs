@@ -85,6 +85,20 @@ mlars <- function(x, y, maxk = 1000, eps = 1e-6)
             temp <- c((cmax - cvec[Inactive]) / (AA - a[Inactive]),
                       (cmax + cvec[Inactive]) / (AA + a[Inactive]))
             gamma <- min(temp[temp > eps], cmax / AA)
+            if (TRUE)
+            {
+                cat("gamma: ")
+                cat(which(temp == gamma))
+                cat(" ")
+                cat(gamma)
+                cat("\nNew score: ")
+                cat(cmax - gamma * AA)
+                cat("\ncmax: ")
+                cat(cmax)
+                cat("\nnextmax: ")
+                cat(max(cvec[Inactive]))
+                cat("\n")
+            }
             mu <- mu + gamma * u
             beta[k + 1, Active] <- beta[k, Active] + gamma * w * Signs
             mul[k + 1, ] <- mu
