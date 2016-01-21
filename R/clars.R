@@ -1,18 +1,3 @@
-# x <- as.matrix(read.csv("./X.csv"))[ , -1]
-# y <- as.matrix(read.csv("./y.csv"))[ , -1]
-
-# source("./R/util.R")
-
-library(lars)
-data(diabetes)
-x <- scale(diabetes$x)
-y <- diabetes$y
-maxk <- 15
-eps <- 1e-9
-
-clars(x, y)
-
-
 clars <- function(x, y, cost, maxk = 1000, eps = 1e-6)
 {
     x <- scale(x)
@@ -47,7 +32,6 @@ clars <- function(x, y, cost, maxk = 1000, eps = 1e-6)
     # number of variables currently in model (for lars, equivalent to step
     # number)
     nv <- 0
-
 
     beta <- matrix(0, nrow = maxk + 1, ncol = p)
     mul <- matrix(0, nrow = maxk + 1, ncol = n)
@@ -107,7 +91,7 @@ clars <- function(x, y, cost, maxk = 1000, eps = 1e-6)
         if (nv == p)
         {
             # cheat and just use OLS
-            # beta[k + 1, Active] <- coef(lm(y ~ x - 1))
+            beta[k + 1, ] <- coef(lm(y ~ x - 1))
         } else
         {
             # Equation 2.11

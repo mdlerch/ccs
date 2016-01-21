@@ -1,17 +1,3 @@
-# x <- as.matrix(read.csv("./X.csv"))[ , -1]
-# y <- as.matrix(read.csv("./y.csv"))[ , -1]
-
-# source("./R/util.R")
-
-library(lars)
-data(diabetes)
-x <- scale(diabetes$x)
-y <- diabetes$y
-maxk <- 15
-eps <- 1e-9
-
-
-
 mlars <- function(x, y, maxk = 1000, eps = 1e-6)
 {
     x <- scale(x)
