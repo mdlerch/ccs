@@ -1,4 +1,4 @@
-mlars <- function(x, y, maxk = 1000, eps = 1e-6)
+mlars <- function(x, y, maxk = 1000, eps = 1e-6, trace = FALSE)
 {
     x <- scale(x)
     # variable setup
@@ -85,12 +85,10 @@ mlars <- function(x, y, maxk = 1000, eps = 1e-6)
             temp <- c((cmax - cvec[Inactive]) / (AA - a[Inactive]),
                       (cmax + cvec[Inactive]) / (AA + a[Inactive]))
             gamma <- min(temp[temp > eps], cmax / AA)
-            if (TRUE)
+            if (trace)
             {
-                cat("gamma: ")
-                cat(which(temp == gamma))
-                cat(" ")
-                cat(gamma)
+                cat("gamma: "); cat(gamma)
+                cat("cmax/A: "); cat(cmax/AA)
                 cat("\nNew score: ")
                 cat(cmax - gamma * AA)
                 cat("\ncmax: ")

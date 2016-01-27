@@ -1,7 +1,5 @@
-# need to prove that when x_j is "all in" i.e. when c_j = 0 i.e. there is no
-# more predictive power from x_j, there MUST be a new higher score
-
 library(lars)
+library(cosso)
 data(diabetes)
 x <- scale(diabetes$x)
 y <- diabetes$y
@@ -12,10 +10,14 @@ n <- nrow(x)
 p <- ncol(x)
 
 set.seed(42)
-cost <- round(runif(p, 1, 10))
-price <- cost / max(cost)
+cost <- round(runif(p, 10, 100)) / 10
 
-clars(x, y)
+
+clars(x, y, trace = TRUE)
+mlars(x, y, trace = TRUE)
+
+-
+out <- mlars(x, y)$beta
 
 mu <- rep(0, n)
 

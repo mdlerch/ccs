@@ -1,4 +1,4 @@
-clars <- function(x, y, cost, maxk = 1000, eps = 1e-6, trace = TRUE)
+clars <- function(x, y, cost, maxk = 1000, eps = 1e-6, trace = FALSE)
 {
     x <- scale(x)
     # variable setup
@@ -10,18 +10,10 @@ clars <- function(x, y, cost, maxk = 1000, eps = 1e-6, trace = TRUE)
         cost <- rep(1, p)
     }
 
-    cost <- cost / sum(cost)
-
-
     # current prediction
     mu <- rep(0, n)
 
-    r <- y - mu
-    C <- t(x) %*% r / sd(r) / (n - 1)
-
-    CM <- max(abs(C))
-    price <- cost * CM
-
+    # sets
     Inactive <- rep(TRUE, p)
     Active <- rep(FALSE, p)
 
@@ -38,47 +30,32 @@ clars <- function(x, y, cost, maxk = 1000, eps = 1e-6, trace = TRUE)
     beta <- matrix(0, nrow = maxk + 1, ncol = p)
     mul <- matrix(0, nrow = maxk + 1, ncol = n)
 
+    # Equation 2.8
+    # get first entry outside of loop
+    r <- y - mu
+    cvec <- t(x) %*% r
+    svec <- abs(cvec) / cost
+    smax <- max(svec)
+    j <- svec >= smax - eps
+
+
     while (nv < p & k < maxk)
     {
         k <- k + 1
 
         # 1. Find the next variable to add.
-        # Calculate the projections (correlations) along the residuals (y - mu)
-        # on each x. Find the largest of these projections and add that variable
-        # to the to the active list.
-        # TODO: is it possible that more than one variable could be added?
 
-        # Equation 2.8
-        r <- y - mu
-        # cvec <- t(x) %*% r / sd(r) / (n - 1)
-        cvec <- t(x) %*% r
-        price <- cost * max(cvec)
-
-
-        # score vector
-        svec <- abs(cvec) - price
-
-        if (trace)
-        {
-            cat("\nIteration: ")
-            cat(k)
-            cat("\n")
-            print(cbind(cvec, svec))
-        }
+        # if (trace) { cat("\nIteration: "); cat(k); cat("\n"); }
+        #print(cbind(cvec, svec)) }
 
         # Equation 2.9
-        smax <- max(svec)
-        j <- svec >= smax - eps
         Active <- Active | j
         Inactive <- !Active
         nv <- nv + 1
+        # TODO: don't really like this
+        cmax <- max(abs(cvec[j]))
 
-        if (trace)
-        {
-            cat("selected: ")
-            cat(colnames(x)[j])
-            cat("\n")
-        }
+        # if (trace) { cat("selected: "); cat(colnames(x)[j]); cat("\n") }
 
         # 2. Find unit-vector of equal projection.
         # Following equations 2.4 through 2.6
@@ -109,25 +86,20 @@ clars <- function(x, y, cost, maxk = 1000, eps = 1e-6, trace = TRUE)
             # Equation 2.11
             a <- t(x) %*% u
             # Equation 2.13
-
-            temp <- c((smax - svec[Inactive]) / (AA - a[Inactive]),
-                    (smax + cvec[Inactive] + price[Inactive]) / (AA - a[Inactive]))
-            # TODO what is cmax / AA option?
-
-            gamma <- min(temp[temp > eps])
+            gammas <- apply(
+                cbind((cmax - cvec[Inactive]) / (AA - a[Inactive]),
+                      (cmax + cvec[Inactive]) / (AA + a[Inactive])), 1, mingt0)
+            fgammas <- gammas[which(gammas > 0)]
+            best <- which.max((cmax - fgammas * AA) / cost[Inactive])
+            gamma <- fgammas[best]
+            j <- rep(FALSE, p)
+            j[which(cumsum(Inactive) == best)[1]] <- TRUE
             if (trace)
             {
-                cat("gamma: ")
-                cat(which(temp == gamma))
-                cat(" ")
-                cat(gamma)
-                cat("\nNew score: ")
-                cat(smax - gamma * AA)
-                cat("\nsmax: ")
-                cat(smax)
-                cat("\nnextmax: ")
-                cat(max(svec[Inactive]))
-                cat("\n")
+                cat("gamma: "); cat(gamma)
+                cat("cmax/A: "); cat(cmax/AA)
+                cat("\nNew score: "); cat(smax - gamma * AA); cat("\nsmax: ")
+                cat(smax); cat("\nnextmax: "); cat(max(svec[Inactive])); cat("\n")
             }
             mu <- mu + gamma * u
             beta[k + 1, Active] <- beta[k, Active] + gamma * w * Signs
