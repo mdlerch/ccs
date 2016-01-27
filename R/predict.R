@@ -22,7 +22,6 @@ predictlars <- function(object, x, s)
 
     m <- beta.f - beta.i
 
-    # y = m * x + b
     beta.out <- m * frac + beta.i
 
     } else {

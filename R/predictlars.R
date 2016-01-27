@@ -4,7 +4,7 @@ predictlars <- function(object, x, s)
 
     k <- nrow(betas)
 
-    if (s < 0 || s > k)
+    if (s < 1 || s > k)
     {
         stop("s is not valid")
     }
@@ -28,5 +28,5 @@ predictlars <- function(object, x, s)
         beta.out <- betas[i, ]
     }
 
-    beta.out
+    x %*% beta.out
 }
