@@ -89,5 +89,9 @@ while (nv < p & k < maxk)
         beta[k + 1, Active] <- beta[k, Active] + gamma * w * Signs
         mul[k + 1, ] <- mu
     }
-
 }
+
+beta <- beta[1:(k+1), ]
+
+pred <- x %*% t(beta)
+dim(pred)
