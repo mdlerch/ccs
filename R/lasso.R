@@ -89,6 +89,8 @@ mlasso <- function(x, y, maxk = 1000, eps = 1e-6)
                   (cmax + cvec[Inactive]) / (AA + a[Inactive]))
         gamma <- min(temp[temp > eps], cmax / AA)
 
+        # Find gamma tilde for each j (the point at which the variable will
+        # cross 0)
         gammaj <- rep(1000000, p)
         gammaj[Active] <- - beta[k, Active] / (w * Signs)
 
