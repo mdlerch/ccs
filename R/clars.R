@@ -45,7 +45,7 @@ clars <- function(x, y, cost, maxk = 1000, eps = 1e-6, trace = FALSE)
 
         # 1. Find the next variable to add.
 
-        # if (trace) { cat("\nIteration: "); cat(k); cat("\n"); }
+        if (trace) { cat("\nIteration: "); cat(k); cat("\n"); }
         #print(cbind(cvec, svec)) }
 
         # Equation 2.9
@@ -55,7 +55,9 @@ clars <- function(x, y, cost, maxk = 1000, eps = 1e-6, trace = FALSE)
         # TODO: don't really like this
         cmax <- max(abs(cvec[j]))
 
-        # if (trace) { cat("selected: "); cat(colnames(x)[j]); cat("\n") }
+        if (trace) { cat("selected: "); cat(colnames(x)[Active]); cat("\n") }
+        if (trace) { print(cbind(cvec[Active], svec[Active])) }
+        if (trace) { print(cbind(cvec[Inactive], svec[Inactive])) }
 
         # 2. Find unit-vector of equal projection.
         # Following equations 2.4 through 2.6

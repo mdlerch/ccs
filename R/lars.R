@@ -29,6 +29,7 @@ mlars <- function(x, y, maxk = 1000, eps = 1e-6, trace = FALSE)
     {
         k <- k + 1
 
+        if (trace) { cat("\nIteration: "); cat(k); cat("\n"); }
         # 1. Find the next variable to add.
         # Calculate the projections (correlations) along the residuals (y - mu)
         # on each x. Find the largest of these projections and add that variable
@@ -44,6 +45,9 @@ mlars <- function(x, y, maxk = 1000, eps = 1e-6, trace = FALSE)
         Inactive <- !Active
         nv <- nv + 1
 
+        if (trace) { cat("selected: "); cat(colnames(x)[Active]); cat("\n") }
+        if (trace) { print(cbind(cvec[Active])) }
+        if (trace) { print(cbind(cvec[Inactive])) }
         # 2. Find unit-vector of equal projection.
         # Following equations 2.4 through 2.6
 
