@@ -53,6 +53,8 @@ clars <- function(x, y, cost, maxk = 1000, eps = 1e-6, trace = FALSE)
         Inactive <- !Active
         nv <- nv + 1
         # TODO: don't really like this
+        r <- y - mu
+        cvec <- t(x) %*% r
         cmax <- max(abs(cvec[j]))
 
         if (trace) { cat("selected: "); cat(colnames(x)[Active]); cat("\n") }
