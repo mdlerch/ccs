@@ -12,9 +12,11 @@ p <- ncol(x)
 set.seed(42)
 cost <- round(runif(p, 10, 100)) / 10
 
-cout <- clars(x, y, trace = TRUE)
-cout2 <- clars2(x, y, trace = TRUE)
+cout <- clars(x, y, cost = cost, trace = TRUE)
+cout2 <- clars2(x, y, cost = cost, trace = TRUE)
+cout3 <- clars2(x, y, trace = TRUE)
 mout <- mlars(x, y, trace = TRUE)
+lout <- lars(x, y, type = "lar")
 
 idx <- 4; sd(y - predictlars(cout, x, idx)); sd(y - predictlars(mout, x, idx))
 
