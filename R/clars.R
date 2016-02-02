@@ -1,4 +1,4 @@
-clars <- function(x, y, cost, maxk = 1000, eps = 1e-6, trace = FALSE)
+clarsOLD <- function(x, y, cost, maxk = 1000, eps = 1e-6, trace = FALSE)
 {
     x <- scale(x)
     # variable setup

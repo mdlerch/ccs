@@ -12,7 +12,7 @@ p <- ncol(x)
 set.seed(42)
 cost <- round(runif(p, 10, 100)) / 10
 
-cout <- clars(x, y, cost = cost, trace = TRUE)
+cout <- clars(x, y, cost = cost, trace = TRUE, type = 3)
 cout2 <- clars2(x, y, cost = cost, trace = TRUE)
 cout3 <- clars2(x, y, trace = TRUE)
 mout <- mlars(x, y, trace = TRUE)
