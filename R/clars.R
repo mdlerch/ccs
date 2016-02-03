@@ -38,8 +38,8 @@ clars <- function(x, y, cost, maxk = 50, eps = 1e-6, trace = FALSE, type = 1)
     smax <- max(svec)
     j <- svec >= smax - eps
 
-    out <- data.frame(var = colnames(x))
-    out$status <- ifelse(Active, "In", "Out")
+    trace.out <- data.frame(var = colnames(x))
+    trace.out$status <- ifelse(Active, "In", "Out")
 
     while (nv < p & k < maxk)
     {
@@ -99,13 +99,8 @@ clars <- function(x, y, cost, maxk = 50, eps = 1e-6, trace = FALSE, type = 1)
                 gamma <- gammas[newj]
                 j[newj] <- TRUE
             }
-            # Type 2 find largest correlation / projection
-            # if (type == 2)
-            # {
-            #     body
-            # }
-            # Type 3 drop variable if crossing 0
-            if (type == 3)
+            # Type 2 drop variable if crossing 0
+            if (type == 2)
             {
                 # start off like type 1
                 temp <- gammas * cost
@@ -114,7 +109,8 @@ clars <- function(x, y, cost, maxk = 50, eps = 1e-6, trace = FALSE, type = 1)
                 gamma <- gammas[newj]
                 # find gamma tilde for each j
                 # populate with large values (for non-active variables)
-                gammaj <- -beta[k, Active] / (w * Signs)
+                gammaj <- rep(0, p)
+                gammaj[Active] <- -beta[k, Active] / (w * Signs)
                 j[newj] <- TRUE
                 # If there are any gammaj that will eventually cross
                 if (any(gammaj > 0))
@@ -127,8 +123,8 @@ clars <- function(x, y, cost, maxk = 50, eps = 1e-6, trace = FALSE, type = 1)
                     if (gamma.tilde < gamma)
                     {
                         gamma <- gamma.tilde
-                        j[which(cumsum(Active) == outj)] <- FALSE
-                        j[which(cumsum(Inactive) == newj)] <- FALSE
+                        j[outj] <- FALSE
+                        j[outj] <- FALSE
                         if (trace) cat("Variable crossing 0\n")
                         nv <- nv - 1
                     }
@@ -140,13 +136,14 @@ clars <- function(x, y, cost, maxk = 50, eps = 1e-6, trace = FALSE, type = 1)
                 cat("Iteration: ")
                 cat(k)
                 cat("\n")
-                out$status <- ifelse(Active, "In", "Out")
-                out$cvec <- cvec
-                out$cost <- cost
-                out$gamma <- gammas
-                out$gamrate <- gammas * cost
-                out$beta <- beta[k, ]
-                print(out)
+                trace.out$status <- ifelse(Active, "In", "Out")
+                trace.out$cvec <- cvec
+                trace.out$cost <- cost
+                trace.out$gamma <- gammas
+                trace.out$gamrate <- gammas * cost
+                trace.out$gamtilde <- gammaj
+                trace.out$beta <- beta[k, ]
+                print(trace.out)
                 print(gamma)
                 # cat("gamma: "); cat(gamma)
                 # cat("cmax/A: "); cat(cmax/AA)
