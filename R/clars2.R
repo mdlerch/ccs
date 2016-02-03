@@ -1,4 +1,4 @@
-clars <- function(x, y, cost, maxk = 1000, eps = 1e-6, trace = FALSE, type = 1)
+clars <- function(x, y, cost, maxk = 50, eps = 1e-6, trace = FALSE, type = 1)
 {
     x <- scale(x)
     # variable setup
@@ -38,16 +38,14 @@ clars <- function(x, y, cost, maxk = 1000, eps = 1e-6, trace = FALSE, type = 1)
     smax <- max(svec)
     j <- svec >= smax - eps
 
+    out <- data.frame(var = colnames(x))
+    out$status <- ifelse(Active, "In", "Out")
 
     while (nv < p & k < maxk)
     {
-        if (trace) { cat("\nR^2 = "); cat(var(r) / var(y)) }
         k <- k + 1
 
         # 1. Find the next variable to add.
-
-        if (trace) { cat("\nIteration: "); cat(k); cat("\n"); }
-        # print(cbind(cvec, svec))
 
         # Equation 2.9
         Active <- Active | j
@@ -57,10 +55,6 @@ clars <- function(x, y, cost, maxk = 1000, eps = 1e-6, trace = FALSE, type = 1)
         r <- y - mu
         cvec <- t(x) %*% r
         cmax <- max(abs(cvec[j]))
-
-        if (trace) { cat("selected: "); cat(colnames(x)[Active]); cat("\n") }
-        if (trace) { print(cbind(cvec[Active], svec[Active])) }
-        if (trace) { print(cbind(cvec[Inactive], svec[Inactive])) }
 
         # 2. Find unit-vector of equal projection.
         # Following equations 2.4 through 2.6
@@ -91,18 +85,19 @@ clars <- function(x, y, cost, maxk = 1000, eps = 1e-6, trace = FALSE, type = 1)
             # Equation 2.11
             a <- t(x) %*% u
             # Equation 2.13
-            gammas <- apply(
+            gammas <- rep(0, p)
+            gammas[Inactive] <- apply(
                 cbind((cmax - cvec[Inactive]) / (AA - a[Inactive]),
                       (cmax + cvec[Inactive]) / (AA + a[Inactive])), 1, mingt0)
 
             # Type 1 find smallest gamma / cost
             if (type == 1)
             {
-                temp <- gammas / cost[Inactive]
-                temp[temp == 0] <- max(temp)
+                temp <- gammas / cost
+                temp[temp == 0] <- max(temp) + 1
                 newj <- which.min(temp)
                 gamma <- gammas[newj]
-                j[which(cumsum(Inactive) == newj)] <- TRUE
+                j[newj] <- TRUE
             }
             # Type 2 find largest correlation / projection
             # if (type == 2)
@@ -113,20 +108,20 @@ clars <- function(x, y, cost, maxk = 1000, eps = 1e-6, trace = FALSE, type = 1)
             if (type == 3)
             {
                 # start off like type 1
-                temp <- gammas / cost[Inactive]
-                temp[temp == 0] <- max(temp)
+                temp <- gammas * cost
+                temp[temp == 0] <- max(temp) + 1
                 newj <- which.min(temp)
                 gamma <- gammas[newj]
                 # find gamma tilde for each j
                 # populate with large values (for non-active variables)
                 gammaj <- -beta[k, Active] / (w * Signs)
-                j[which(cumsum(Inactive) == newj)] <- TRUE
+                j[newj] <- TRUE
                 # If there are any gammaj that will eventually cross
                 if (any(gammaj > 0))
                 {
                     # get the first to cross
                     temp <- gammaj
-                    temp[temp <= 0] <- max(temp)
+                    temp[temp <= 0] <- max(temp) + 1
                     outj <- which.min(temp)
                     gamma.tilde <- gammaj[outj]
                     if (gamma.tilde < gamma)
@@ -135,48 +130,28 @@ clars <- function(x, y, cost, maxk = 1000, eps = 1e-6, trace = FALSE, type = 1)
                         j[which(cumsum(Active) == outj)] <- FALSE
                         j[which(cumsum(Inactive) == newj)] <- FALSE
                         if (trace) cat("Variable crossing 0\n")
+                        nv <- nv - 1
                     }
-                    # TODO: now what happens?  Do I need to figure out a
-                    # different next one to enter or does that happen
-                    # automatically?
                 }
             }
-            # fgammas <- gammas[which(gammas > 0)]
-            # best <- which.min(fgammas / cost[Inactive])
-            # gamma <- fgammas[best]
-
-            # # Find gamma tilde for each j (the point at which the variable will
-            # # cross 0)
-            # gammaj <- rep(1000000, p)
-            # gammaj[Active] <- - beta[k, Active] / (w * Signs)
-
-            # js <- which(gammaj > 0)
-
-            # lass <- FALSE
-            # if (length(js))
-            # {
-            #     gamma.tilde <- min(gammaj[js])
-            #     if (gamma.tilde < gamma)
-            #     {
-            #         gamma <- gamma.tilde
-            #         out <- which(gamma == gammaj)
-            #         nv <- nv - 1
-            #         lass <- TRUE
-            #         if (trace)
-            #         {
-            #             cat("Variable crossing 0")
-            #         }
-            #     }
-            # }
-
-            # j <- rep(FALSE, p)
-            # j[which(cumsum(Inactive) == best)[1]] <- TRUE
             if (trace)
             {
-                cat("gamma: "); cat(gamma)
-                cat("cmax/A: "); cat(cmax/AA)
-                cat("\nNew score: "); cat(smax - gamma * AA); cat("\nsmax: ")
-                cat(smax); cat("\nnextmax: "); cat(max(svec[Inactive])); cat("\n")
+                cat("\n\n")
+                cat("Iteration: ")
+                cat(k)
+                cat("\n")
+                out$status <- ifelse(Active, "In", "Out")
+                out$cvec <- cvec
+                out$cost <- cost
+                out$gamma <- gammas
+                out$gamrate <- gammas * cost
+                out$beta <- beta[k, ]
+                print(out)
+                print(gamma)
+                # cat("gamma: "); cat(gamma)
+                # cat("cmax/A: "); cat(cmax/AA)
+                # cat("\nNew score: "); cat(smax - gamma * AA); cat("\nsmax: ")
+                # cat(smax); cat("\nnextmax: "); cat(max(svec[Inactive])); cat("\n")
             }
             mu <- mu + gamma * u
             beta[k + 1, Active] <- beta[k, Active] + gamma * w * Signs
