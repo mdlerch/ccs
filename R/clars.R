@@ -34,12 +34,17 @@ clars <- function(x, y, cost, maxk = 50, eps = 1e-6, trace = FALSE, type = 1)
     # get first entry outside of loop
     r <- y - mu
     cvec <- t(x) %*% r
+    cmax <- max(abs(cvec))
     svec <- abs(cvec) / cost
     smax <- max(svec)
     j <- svec >= smax - eps
+    if (type == 3)
+    {
+        j <- cvec >= cmax - eps
+    }
+    Active <- j
 
     trace.out <- data.frame(var = colnames(x))
-    trace.out$status <- ifelse(Active, "In", "Out")
 
     while (nv < p & k < maxk)
     {
@@ -48,7 +53,6 @@ clars <- function(x, y, cost, maxk = 50, eps = 1e-6, trace = FALSE, type = 1)
         # 1. Find the next variable to add.
 
         # Equation 2.9
-        Active <- Active | j
         Inactive <- !Active
         nv <- nv + 1
         # TODO: don't really like this
@@ -90,6 +94,7 @@ clars <- function(x, y, cost, maxk = 50, eps = 1e-6, trace = FALSE, type = 1)
                 cbind((cmax - cvec[Inactive]) / (AA - a[Inactive]),
                       (cmax + cvec[Inactive]) / (AA + a[Inactive])), 1, mingt0)
 
+            # TODO: this makes no sense
             # Type 1 find smallest gamma / cost
             if (type == 1)
             {
@@ -124,27 +129,71 @@ clars <- function(x, y, cost, maxk = 50, eps = 1e-6, trace = FALSE, type = 1)
                     {
                         gamma <- gamma.tilde
                         j[outj] <- FALSE
+                        j[newj] <- FALSE
+                        if (trace) {
+                            cat("\n\nVariable crossing 0, ")
+                            cat(as.character(trace.out$var[outj]))
+                            cat("\n")
+                        }
+                        nv <- nv - 2
+                    }
+                }
+            }
+            if (type == 3)
+            {
+                # start off like type 1
+                temp <- gammas
+                temp[temp == 0] <- max(temp) + 1
+                newj <- which.min(temp)
+                gamma <- gammas[newj]
+                # find gamma tilde for each j
+                # populate with large values (for non-active variables)
+                gammaj <- rep(0, p)
+                gammaj[Active] <- -beta[k, Active] / (w * Signs)
+                j[newj] <- TRUE
+                # If there are any gammaj that will eventually cross
+                if (any(gammaj > 0))
+                {
+                    # get the first to cross
+                    temp <- gammaj
+                    temp[temp <= 0] <- max(temp) + 1
+                    outj <- which.min(temp)
+                    gamma.tilde <- gammaj[outj]
+                    if (gamma.tilde < gamma)
+                    {
+                        gamma <- gamma.tilde
                         j[outj] <- FALSE
-                        if (trace) cat("Variable crossing 0\n")
-                        nv <- nv - 1
+                        j[newj] <- FALSE
+                        if (trace) {
+                            cat("\n\nVariable crossing 0, ")
+                            cat(as.character(trace.out$var[outj]))
+                            cat("\n")
+                        }
+                        nv <- nv - 2
                     }
                 }
             }
             if (trace)
             {
-                cat("\n\n")
                 cat("Iteration: ")
                 cat(k)
+                cat("\nCurrent number of variables: ")
+                cat(nv)
+                cat("\nTry to put in: ")
+                cat(as.character(trace.out$var[newj]))
                 cat("\n")
-                trace.out$status <- ifelse(Active, "In", "Out")
+                trace.out$Active <- ifelse(Active, "In", "Out")
+                # trace.out$j <- ifelse(j, "In", "Out")
                 trace.out$cvec <- cvec
                 trace.out$cost <- cost
+                trace.out$score <- (cmax - gammas * AA) / cost
                 trace.out$gamma <- gammas
                 trace.out$gamrate <- gammas * cost
                 trace.out$gamtilde <- gammaj
+                trace.out$gamma_sel <- gamma
                 trace.out$beta <- beta[k, ]
                 print(trace.out)
-                print(gamma)
+                cat("\n\n")
                 # cat("gamma: "); cat(gamma)
                 # cat("cmax/A: "); cat(cmax/AA)
                 # cat("\nNew score: "); cat(smax - gamma * AA); cat("\nsmax: ")
@@ -153,6 +202,7 @@ clars <- function(x, y, cost, maxk = 50, eps = 1e-6, trace = FALSE, type = 1)
             mu <- mu + gamma * u
             beta[k + 1, Active] <- beta[k, Active] + gamma * w * Signs
             mul[k + 1, ] <- mu
+            Active <- j
         }
 
     }
