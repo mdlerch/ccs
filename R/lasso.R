@@ -27,6 +27,8 @@ mlasso <- function(x, y, maxk = 1000, eps = 1e-6)
     # Doing a lasso step?
     lass <- FALSE
 
+    trace.out <- data.frame(var = colnames(x))
+
     while (nv < p & k < maxk)
     {
         k <- k + 1
@@ -107,6 +109,24 @@ mlasso <- function(x, y, maxk = 1000, eps = 1e-6)
                 nv <- nv - 1
                 lass <- TRUE
             }
+        }
+
+        if (trace)
+        {
+            cat("Iteration: ")
+            cat(k)
+            cat("\nCurrent number of variables: ")
+            cat(nv)
+            cat("\n")
+            trace.out$Active <- ifelse(Active, "In", "Out")
+            # trace.out$j <- ifelse(j, "In", "Out")
+            trace.out$cvec <- cvec
+            # trace.out$gamma <- gammas
+            trace.out$gamtilde <- gammaj
+            trace.out$gamma_sel <- gamma
+            trace.out$beta <- beta[k, ]
+            print(trace.out)
+            cat("\n\n")
         }
 
         mu <- mu + gamma * u

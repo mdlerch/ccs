@@ -1,4 +1,4 @@
-predictlars <- function(object, x, s)
+predictylars <- function(object, x, s)
 {
     betas <- object$beta
 

@@ -12,18 +12,14 @@ p <- ncol(x)
 set.seed(42)
 cost <- round(runif(p, 10, 100)) / 10
 
-cout2 <- clars(x, y, cost = cost, trace = TRUE, type = 2, maxk = 50)
+cout2 <- clars(x, y, cost = cost, trace = TRUE, type = 3, maxk = 100)
+mout <- mlars(x, y)
 plotlars(cout2)
 
-cout3 <- clars(x, y, cost = cost, trace = TRUE, type = 3, maxk = 50)
+clarsscore <- evalclars(cout2, x, y, cost)
 
-cout1 <- clars(x, y, cost = cost, trace = TRUE, type = 1)
+mlarsscore <- evalclars(mout, x, y, cost)
 
-cout2 <- clars2(x, y, cost = cost, trace = TRUE)
-cout3 <- clars2(x, y, trace = TRUE)
-mout <- mlars(x, y, trace = TRUE)
-lout <- lars(x, y, type = "lar")
-louts <- lars(x, y, type = "lasso")
-
-idx <- 4; sd(y - predictlars(cout, x, idx)); sd(y - predictlars(mout, x, idx))
+plot(clarsscore$score ~ clarsscore$modelcost, type = "p", ylim = c(50, 60), col = "blue", pch = 16, cex = 2)
+points(mlarsscore$score ~ mlarsscore$modelcost, col = "red", pch = 16, cex = 2)
 
