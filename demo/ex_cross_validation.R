@@ -16,15 +16,16 @@ ntest <- round(0.10 * n)
 test <- sample(1:n, ntest, replace = FALSE)
 train <- setdiff(1:n, test)
 
+xtrain <- x[train, ]
+ytrain <- y[train]
+xtest <- x[test, ]
+ytest <- y[test]
 
+cout <- clars(xtrain, ytrain, cost = cost, trace = TRUE, type = 3, maxk = 100)
+mout <- mlars(xtrain, ytrain)
 
-cout2 <- clars(x, y, cost = cost, trace = TRUE, type = 3, maxk = 100)
-mout <- mlars(x, y)
-plotlars(cout2)
-
-clarsscore <- evalclars(cout2, x, y, cost)
-
-mlarsscore <- evalclars(mout, x, y, cost)
+clarsscore <- evalclars(cout, xtest, ytest, cost)
+mlarsscore <- evalclars(mout, xtest, ytest, cost)
 
 plot(clarsscore$score ~ clarsscore$modelcost, type = "p", ylim = c(2500, 3600), col = "blue", pch = 16, cex = 2)
 points(mlarsscore$score ~ mlarsscore$modelcost, col = "red", pch = 16, cex = 2)
