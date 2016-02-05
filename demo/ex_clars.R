@@ -20,6 +20,6 @@ clarsscore <- evalclars(cout2, x, y, cost)
 
 mlarsscore <- evalclars(mout, x, y, cost)
 
-plot(clarsscore$score ~ clarsscore$modelcost, type = "p", ylim = c(50, 60), col = "blue", pch = 16, cex = 2)
+plot(clarsscore$score ~ clarsscore$modelcost, type = "p", ylim = c(2500, 3600), col = "blue", pch = 16, cex = 2)
 points(mlarsscore$score ~ mlarsscore$modelcost, col = "red", pch = 16, cex = 2)
 

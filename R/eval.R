@@ -12,7 +12,7 @@ evalclars <- function(obj, x, y, cost)
         used <- rep(0, p)
         used[betas[i, ] != 0] <- 1
         ypred <- x %*% betas[i, ]
-        score[i] <- sd(y - ypred)
+        score[i] <- var(y - ypred)
         modelcost[i] <- sum(used * cost)
     }
 
