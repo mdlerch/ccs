@@ -21,7 +21,7 @@ ytrain <- y[train]
 xtest <- x[test, ]
 ytest <- y[test]
 
-cout <- clars(xtrain, ytrain, cost = cost, trace = TRUE, type = 3, maxk = 100)
+cout <- clars(xtrain, ytrain, cost = cost, trace = TRUE, maxk = 100)
 mout <- mlars(xtrain, ytrain)
 
 clarsscore <- evalclars(cout, xtest, ytest, cost)

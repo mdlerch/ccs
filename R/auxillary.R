@@ -8,7 +8,7 @@ mingt0 <- function(x)
     return(0)
 }
 
-negs <- function(x)
+minlt0 <- function(x)
 {
     if (sum(x < 0) > 0)
     {

@@ -1,17 +1,10 @@
-clars <- function(x, y, cost, maxk = 50, eps = 1e-6, trace = FALSE, type = 1)
+clars <- function(x, y, cost, maxk = 50, eps = 1e-6, trace = FALSE)
 {
     x <- scale(x)
     # variable setup
-    n <- nrow(x)
-    p <- ncol(x)
+    n <- nrow(x); p <- ncol(x)
 
-    if (missing(cost))
-    {
-        cost <- rep(1, p)
-    }
-
-    # current prediction
-    mu <- rep(0, n)
+    if (missing(cost)) cost <- rep(1, p)
 
     # sets
     Inactive <- rep(TRUE, p)
@@ -19,40 +12,55 @@ clars <- function(x, y, cost, maxk = 50, eps = 1e-6, trace = FALSE, type = 1)
 
     Gram <- t(x) %*% x
 
-    # number lars iterations.  lars will do p steps.  number of lasso steps is
-    # not a fixed quantity
+    # number of steps
     k <- 0
-
-    # number of variables currently in model (for lars, equivalent to step
-    # number)
+    # number of variables currently in model
     nv <- 0
 
+    mu <- rep(0, n)
     beta <- matrix(0, nrow = maxk + 1, ncol = p)
     mul <- matrix(0, nrow = maxk + 1, ncol = n)
 
     # Equation 2.8
-    # get first entry outside of loop
     r <- y - mu
     cvec <- t(x) %*% r
     cmax <- max(abs(cvec))
     svec <- abs(cvec) / cost
     smax <- max(svec)
     j <- svec >= smax - eps
-    if (type == 3)
-    {
-        j <- cvec >= cmax - eps
-    }
     Active <- j
 
     trace.out <- data.frame(var = colnames(x))
+
+    if (trace)
+    {
+        cat("\nIteration: ")
+        cat(k)
+        cat("\nCurrent number of variables: 0")
+        cat("\n")
+        cat("\nTry to put in next ")
+        cat(as.character(trace.out$var[j]))
+        cat("\n")
+        trace.out$Active <- ifelse(Active, "In", "Out")
+        trace.out$Active[!Active & j] <- "next"
+        trace.out$cont <- 0
+        trace.out$cvec <- cvec
+        trace.out$cost <- cost
+        trace.out$score <- cvec / cost
+        trace.out$gammaP <- 0
+        trace.out$gammaN <- 0
+        trace.out$gamtilde <- 0
+        trace.out$gamma_sel <- 0
+        trace.out$beta <- 0
+        print(trace.out)
+        cat("\n\n")
+    }
 
     while (nv < p & k < maxk)
     {
         k <- k + 1
 
         # 1. Find the next variable to add.
-
-        # Equation 2.9
         Inactive <- !Active
         nv <- nv + 1
         # TODO: don't really like this
@@ -61,205 +69,149 @@ clars <- function(x, y, cost, maxk = 50, eps = 1e-6, trace = FALSE, type = 1)
         cmax <- max(abs(cvec[Active]))
 
         # 2. Find unit-vector of equal projection.
-        # Following equations 2.4 through 2.6
-
         Signs <- sign(cvec[Active])
-        # Equation 2.4
         XA <- x[ , Active] * rep(1, n) %*% t(Signs)
-        # Equation 2.5
         gA <- t(XA) %*% XA
         one <- rep(1, sum(Active))
-        # Equation 2.5
         AA <- 1 / sqrt(one %*% solve(gA) %*% one)
-        # Equation 2.6 NOTE add the Signs to match package
         w <- AA %*% t(solve(gA) %*% one)
-        # Equation 2.6
         u <- XA %*% t(w)
 
         # 3. Increment model fit in the direction of u.
-        #  New estimate will be mu + \gamma * u where \gamma is large enough
-        #  such that the next input variable will now be equally correlated.
 
-        # if (nv == p)
-        # {
-        #     # cheat and just use OLS
-        #     beta[k + 1, ] <- coef(lm(y ~ x - 1))
-        # } else
+        # 3 options for how far to go along u (gamma).  Flow chart:
+        #  a) Are there any variables more correlated than what we have in model
+        #  already: TODO: should this be scaled by price?
+        #    Set gamma so that these variables enter and are now equal to the
+        #    already in the model variables as far as correlation.
+        #  b) Find gamma until next variables are tied.
+        #    lars selects smallest gamma, we select smallest gamma * cost
+        #  Given an above gamma, does any variable cross zero?
+        #    This suggests an option to remove a variable (i.e. a cost) so go
+        #    for it. TODO: stop at that point?  keep going?
+
+        a <- t(x) %*% u
+
+        gamP <- rep(0, p)
+        gamN <- rep(0, p)
+        gamP[Inactive] <- (cmax - cvec[Inactive]) / (AA - a[Inactive])
+        gamN[Inactive] <- (cmax + cvec[Inactive]) / (AA + a[Inactive])
+
+        gammaP <- rep(0, p)
+        gammaN <- rep(0, p)
+        gammaP[Inactive] <- apply(cbind(gamP[Inactive], gamN[Inactive]),
+                                  1, mingt0)
+        gammaN[Inactive] <- apply(cbind(gamP[Inactive], gamN[Inactive]),
+                                  1, minlt0)
+
+
+
+
+        contenders <- rep(FALSE, p)
+        contenders[which(abs(cvec) > cmax)] <- TRUE
+        temp <- gammaP * cost
+        temp[temp == 0] <- max(temp) + 1
+        newj <- which.min(temp)
+        gamma <- gammaP[newj]
+
+        flag.contender <- FALSE
+        flag.cross <- FALSE
+
+        direction <- 1
+        if (any(contenders))
         {
-            # Equation 2.11
-            a <- t(x) %*% u
-            # Equation 2.13
-            gammas <- rep(0, p)
-            gammaN <- rep(0, p)
-            gam1 <- rep(0, p)
-            gam2 <- rep(0, p)
-            gam1[Inactive] <- (cmax - cvec[Inactive]) / (AA - a[Inactive])
-            gam2[Inactive] <- (cmax - cvec[Inactive]) / (AA - a[Inactive])
-            gammas[Inactive] <- apply(cbind(gam1[Inactive], gam2[Inactive]),
-                                      1, mingt0)
-
-            gammaN[Inactive] <- apply(cbind(gam1[Inactive], gam2[Inactive]),
-                                      1, negs)
-            # gammas[Inactive] <- apply(
-            #     cbind((cmax - cvec[Inactive]) / (AA - a[Inactive]),
-            #           (cmax + cvec[Inactive]) / (AA + a[Inactive])), 1, mingt0)
-
-            # TODO: this makes no sense
-            # Type 1 find smallest gamma / cost
-            # if (type == 1)
-            # {
-            #     temp <- gammas / cost
-            #     temp[temp == 0] <- max(temp) + 1
-            #     newj <- which.min(temp)
-            #     gamma <- gammas[newj]
-            #     j[newj] <- TRUE
-            #     gammaj <- rep(0, p)
-            # }
-            # # Type 2 drop variable if crossing 0
-            # if (type == 2)
-            # {
-            #     # start off like type 1
-            #     temp <- gammas * cost
-            #     temp[temp == 0] <- max(temp) + 1
-            #     newj <- which.min(temp)
-            #     gamma <- gammas[newj]
-            #     # find gamma tilde for each j
-            #     # populate with large values (for non-active variables)
-            #     gammaj <- rep(0, p)
-            #     gammaj[Active] <- -beta[k, Active] / (w * Signs)
-            #     j[newj] <- TRUE
-            #     # If there are any gammaj that will eventually cross
-            #     if (any(gammaj > 0))
-            #     {
-            #         # get the first to cross
-            #         temp <- gammaj
-            #         temp[temp <= 0] <- max(temp) + 1
-            #         outj <- which.min(temp)
-            #         gamma.tilde <- gammaj[outj]
-            #         if (gamma.tilde < gamma)
-            #         {
-            #             gamma <- gamma.tilde
-            #             j[outj] <- FALSE
-            #             j[newj] <- FALSE
-            #             if (trace) {
-            #                 cat("\n\nVariable crossing 0, ")
-            #                 cat(as.character(trace.out$var[outj]))
-            #                 cat("\n")
-            #             }
-            #             nv <- nv - 2
-            #         }
-            #     }
-            # }
-            if (type == 3)
+            tempp <- gammaP * cost
+            tempp[!contenders] <- 0
+            tempn <- gammaN * cost
+            tempn[!contenders] <- 0
+            temp <- c(tempp, abs(tempn))
+            gamma <- min(temp[temp != 0])
+            newj <- which(gamma == c(tempp, abs(tempn)))
+            if (newj > p)
             {
-                # Try to recreate lasso
-                # temp <- gammas
-                contenders <- rep(FALSE, p)
-                contenders[which(abs(cvec) > cmax)] <- TRUE
-                temp <- gammas * cost
-                temp[temp == 0] <- max(temp) + 1
-                newj <- which.min(temp)
-                gamma <- gammas[newj]
-
-                direction <- 1
-                if (any(contenders))
-                {
-                    tempp <- gammas * cost
-                    tempp[!contenders] <- 0
-                    tempn <- gammaN * cost
-                    tempn[!contenders] <- 0
-                    temp <- c(tempp, abs(tempn))
-                    gamma <- min(temp[temp != 0])
-                    newj <- which(gamma == c(tempp, abs(tempn)))
-                    if (newj > p)
-                    {
-                        gamma <- gammaN[newj - p]
-                        newj <- newj - p
-                        # cat(gamma)
-                        # cat("\n")
-                        # cat(newj)
-                    } else {
-                        gamma <- gammas[newj]
-                    }
-                }
-                j[newj] <- TRUE
-
-                # find gamma tilde for each j
-                # populate with large values (for non-active variables)
-                gammaj <- rep(0, p)
-                gammaj[Active] <- -beta[k, Active] / (w * Signs)
-                # If there are any gammaj that will eventually cross
-                if (any(direction * gammaj > 0))
-                {
-                    if (nv == p)
-                    {
-                        gamma <- cmax / AA
-                        temp <- gammaj
-                        temp[temp <= 0] <- max(temp) + 1
-                        outj <- which.min(temp)
-                        gamma.tilde <- gammaj[outj]
-                        if (gamma.tilde < gamma)
-                        {
-                            gamma <- gamma.tilde
-                            j[outj] <- FALSE
-                            if (trace) {
-                                cat("\n\nVariable crossing 0, ")
-                                cat(as.character(trace.out$var[outj]))
-                            }
-                            nv <- nv - 2
-                        }
-                    }
-                    # get the first to cross
-                    temp <- gammaj
-                    temp[temp <= 0] <- max(temp) + 1
-                    outj <- which.min(temp)
-                    gamma.tilde <- gammaj[outj]
-                    if (gamma.tilde < gamma)
-                    {
-                        gamma <- gamma.tilde
-                        j[outj] <- FALSE
-                        j[newj] <- FALSE
-                        if (trace) {
-                            cat("\n\nVariable crossing 0, ")
-                            cat(as.character(trace.out$var[outj]))
-                            cat("\n")
-                        }
-                        nv <- nv - 2
-                    }
-                }
+                gamma <- gammaN[newj - p]
+                newj <- newj - p
+            } else {
+                gamma <- gammaP[newj]
             }
-            if (trace)
-            {
-                cat("\nIteration: ")
-                cat(k)
-                cat("\nCurrent number of variables: ")
-                cat(nv)
-                cat("\nTry to put in: ")
-                cat(as.character(trace.out$var[newj]))
-                cat("\n")
-                trace.out$Active <- ifelse(Active, "In", "Out")
-                trace.out$Active[!Active & j] <- "next"
-                trace.out$cont <- ifelse(contenders, "Y", "N")
-                trace.out$cvec <- cvec
-                trace.out$cost <- cost
-                trace.out$score <- gammas * cost
-                trace.out$gammaP <- gammas
-                trace.out$gammaN <- gammaN
-                trace.out$gamtilde <- gammaj
-                trace.out$gamma_sel <- drop(gamma)
-                trace.out$beta <- beta[k, ]
-                print(trace.out)
-                cat("\n\n")
-                # cat("gamma: "); cat(gamma)
-                # cat("cmax/A: "); cat(cmax/AA)
-                # cat("\nNew score: "); cat(smax - gamma * AA); cat("\nsmax: ")
-                # cat(smax); cat("\nnextmax: "); cat(max(svec[Inactive])); cat("\n")
-            }
-            mu <- mu + drop(gamma) * u
-            beta[k + 1, Active] <- beta[k, Active] + drop(gamma) * w * Signs
-            mul[k + 1, ] <- mu
-            Active <- j
+            flag.contender <- TRUE
         }
+        j[newj] <- TRUE
+
+        # find gamma tilde for each j
+        # populate with large values (for non-active variables)
+        gammaj <- rep(0, p)
+        gammaj[Active] <- -beta[k, Active] / (w * Signs)
+        # If there are any gammaj that will eventually cross
+        if (any(direction * gammaj > 0))
+        {
+            if (nv == p)
+            {
+                gamma <- cmax / AA
+                temp <- gammaj
+                temp[temp <= 0] <- max(temp) + 1
+                outj <- which.min(temp)
+                gamma.tilde <- gammaj[outj]
+                if (gamma.tilde < gamma)
+                {
+                    gamma <- gamma.tilde
+                    j[outj] <- FALSE
+                    nv <- nv - 2
+                }
+            }
+            # get the first to cross
+            temp <- gammaj
+            temp[temp <= 0] <- max(temp) + 1
+            outj <- which.min(temp)
+            gamma.tilde <- gammaj[outj]
+            if (gamma.tilde < gamma)
+            {
+                flag.cross <- TRUE
+                gamma <- gamma.tilde
+                j[outj] <- FALSE
+                j[newj] <- FALSE
+                nv <- nv - 2
+            }
+        }
+        if (trace)
+        {
+            cat("\nIteration: ")
+            cat(k)
+            cat("\nCurrent number of variables: ")
+            cat(nv)
+            if (flag.contender)
+            {
+                cat("\nTry to put in contender ")
+                cat(as.character(trace.out$var[newj]))
+            } else {
+                cat("\nTry to put in next ")
+                cat(as.character(trace.out$var[newj]))
+            }
+            if (flag.cross)
+            {
+                cat("\nBut variable ")
+                cat(as.character(trace.out$var[outj]))
+                cat(" is crossing zero")
+            }
+            cat("\n")
+            trace.out$Active <- ifelse(Active, "In", "Out")
+            trace.out$Active[!Active & j] <- "next"
+            trace.out$cont <- ifelse(contenders, "Y", "N")
+            trace.out$cvec <- cvec
+            trace.out$cost <- cost
+            trace.out$score <- gammaP * cost
+            trace.out$gammaP <- gammaP
+            trace.out$gammaN <- gammaN
+            trace.out$gamtilde <- gammaj
+            trace.out$gamma_sel <- drop(gamma)
+            trace.out$beta <- beta[k, ]
+            print(trace.out)
+            cat("\n\n")
+        }
+        mu <- mu + drop(gamma) * u
+        beta[k + 1, Active] <- beta[k, Active] + drop(gamma) * w * Signs
+        mul[k + 1, ] <- mu
+        Active <- j
 
     }
 
