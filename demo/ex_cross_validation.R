@@ -3,30 +3,37 @@ library(cosso)
 data(diabetes)
 x <- scale(diabetes$x)
 y <- diabetes$y
-maxk <- 15
+maxk <- 50
 eps <- 1e-9
 x <- scale(x)
 n <- nrow(x)
 p <- ncol(x)
-
 set.seed(42)
 cost <- round(runif(p, 10, 100)) / 10
-
-ntest <- round(0.10 * n)
+ntest <- round(0.30 * n)
 test <- sample(1:n, ntest, replace = FALSE)
 train <- setdiff(1:n, test)
-
 xtrain <- x[train, ]
 ytrain <- y[train]
 xtest <- x[test, ]
 ytest <- y[test]
 
-cout <- clars(xtrain, ytrain, cost = cost, trace = TRUE, maxk = 100)
+cout <- clars(xtrain, ytrain, cost = cost, trace = TRUE, maxk = 50)
 mout <- mlars(xtrain, ytrain)
+
+clarsscore <- evalclars(cout, xtrain, ytrain, cost)
+mlarsscore <- evalclars(mout, xtrain, ytrain, cost)
+ylims <- c(2500, 4000)
+xlims <- c(min(clarsscore$modelcost, mlarsscore$modelcost),
+           max(clarsscore$modelcost, mlarsscore$modelcost))
+plot(clarsscore$score ~ clarsscore$modelcost, type = "p", ylim = ylims, xlim = xlims, col = "blue", pch = 16, cex = 2)
+points(mlarsscore$score ~ mlarsscore$modelcost, col = "red", pch = 16, cex = 2)
 
 clarsscore <- evalclars(cout, xtest, ytest, cost)
 mlarsscore <- evalclars(mout, xtest, ytest, cost)
-
-plot(clarsscore$score ~ clarsscore$modelcost, type = "p", ylim = c(2500, 3600), col = "blue", pch = 16, cex = 2)
+ylims <- c(2500, 4000)
+xlims <- c(min(clarsscore$modelcost, mlarsscore$modelcost),
+           max(clarsscore$modelcost, mlarsscore$modelcost))
+plot(clarsscore$score ~ clarsscore$modelcost, type = "p", ylim = ylims, xlim = xlims, col = "blue", pch = 16, cex = 2)
 points(mlarsscore$score ~ mlarsscore$modelcost, col = "red", pch = 16, cex = 2)
 

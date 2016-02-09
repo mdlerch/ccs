@@ -18,4 +18,12 @@ minlt0 <- function(x)
 }
 
 
-
+mindist <- function(x)
+{
+    if (sum(x > 0) != 0)
+    {
+        temp <- x[x != 0]
+        return(temp[which(abs(temp) == min(abs(temp)))])
+    }
+    return(0)
+}
