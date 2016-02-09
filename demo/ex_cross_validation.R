@@ -37,3 +37,4 @@ xlims <- c(min(clarsscore$modelcost, mlarsscore$modelcost),
 plot(clarsscore$score ~ clarsscore$modelcost, type = "p", ylim = ylims, xlim = xlims, col = "blue", pch = 16, cex = 2)
 points(mlarsscore$score ~ mlarsscore$modelcost, col = "red", pch = 16, cex = 2)
 
+plotlars(cout)
