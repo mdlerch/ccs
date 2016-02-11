@@ -50,3 +50,23 @@ plotclars <- function(lars.object, cost)
     }
 }
 
+plotcanalyze <- function(obj, type = "full")
+{
+    out <- paste(c("clars", "lars", "lass"), "_", type, sep = "")
+    xlims <- c(min(obj[[out[1]]]$modelcost, obj[[out[2]]]$modelcost,
+                   obj[[out[3]]]$modelcost),
+               max(obj[[out[1]]]$modelcost, obj[[out[2]]]$modelcost,
+                   obj[[out[3]]]$modelcost))
+    ylims <- c(min(obj[[out[1]]]$score, obj[[out[2]]]$score,
+                   obj[[out[3]]]$score),
+               max(obj[[out[1]]]$score, obj[[out[2]]]$score,
+                   obj[[out[3]]]$score))
+    plot(obj[[out[1]]]$score ~ obj[[out[1]]]$modelcost, type = "p",
+         ylim = ylims, xlim = xlims, col = "blue", pch = 16, cex = 3,
+         xlab = "Model Cost", ylab = "Score")
+    points(obj[[out[2]]]$score ~ obj[[out[2]]]$modelcost, col = "red", pch = 16, cex = 2)
+    points(obj[[out[3]]]$score ~ obj[[out[3]]]$modelcost, col = "purple", pch = 16, cex = 1)
+
+    legend('topright', c("clars", "lars", "lasso"), pch = 16, col = c("blue", "red", "purple"))
+}
+

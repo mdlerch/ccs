@@ -12,6 +12,33 @@ set.seed(95)
 
 # 1. All variables cost same 
 cost <- rep(1, p)
-canalyze(x, y, cost, hold = 0.2)
+out <- canalyze(x, y, cost, hold = 0.2)
 
+plotcanalyze(out, "full")
+plotcanalyze(out, "train")
+plotcanalyze(out, "test")
 
+# 2. Random cost same order of magnitude
+cost <- round(runif(p, 10, 100)) / 10
+out <- canalyze(x, y, cost, hold = 0.2)
+
+plotcanalyze(out, "full")
+plotcanalyze(out, "train")
+plotcanalyze(out, "test")
+
+# 2. Random cost same differing of magnitude
+cost <- exp(runif(p, 1, 10))
+out <- canalyze(x, y, cost, hold = 0.2)
+
+plotcanalyze(out, "full")
+plotcanalyze(out, "train")
+plotcanalyze(out, "test")
+
+# 3. Best cost more. Best = largest lm coef
+order(abs(lm(y ~ x - 1)$coef))
+cost <- exp(runif(p, 1, 10))
+out <- canalyze(x, y, cost, hold = 0.2)
+
+plotcanalyze(out, "full")
+plotcanalyze(out, "train")
+plotcanalyze(out, "test")
