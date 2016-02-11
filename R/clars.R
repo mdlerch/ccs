@@ -22,8 +22,8 @@ clars <- function(x, y, cost, maxk = 50, eps = 1e-6, trace = FALSE)
     mul <- matrix(0, nrow = maxk + 1, ncol = n)
 
     # Equation 2.8
-    r <- y - mu
-    cvec <- t(x) %*% r
+    e <- y - mu
+    cvec <- t(x) %*% e
     cmax <- max(abs(cvec))
     svec <- abs(cvec) / cost
     smax <- max(svec)
@@ -43,10 +43,11 @@ clars <- function(x, y, cost, maxk = 50, eps = 1e-6, trace = FALSE)
         cat("\n")
         trace.out$In <- ifelse(Active, "In", "Out")
         trace.out$In[!Active & j] <- "next"
-        trace.out$cont <- 0
+        # trace.out$cont <- 0
         trace.out$cvec <- cvec
-        trace.out$percost <- cvec / cost
         trace.out$score <- cvec / cost
+        trace.out$scoreP <- 0
+        trace.out$scoreN <- 0
         trace.out$gammaP <- 0
         trace.out$gammaN <- 0
         trace.out$gamtilde <- 0
@@ -64,8 +65,8 @@ clars <- function(x, y, cost, maxk = 50, eps = 1e-6, trace = FALSE)
         # 1. Find the next variable to add.
         Inactive <- !Active
         nv <- nv + 1
-        r <- y - mu
-        cvec <- t(x) %*% r
+        e <- y - mu
+        cvec <- t(x) %*% e
         cmax <- max(abs(cvec[Active]))
 
         # 2. Find unit-vector of equal projection.
@@ -85,6 +86,7 @@ clars <- function(x, y, cost, maxk = 50, eps = 1e-6, trace = FALSE)
         {
             gamma <- cmax / AA
         } else {
+            ### METHOD 1
             # opts <- Inactive & !skip
             # gamP <- rep(0, p)
             # gamN <- rep(0, p)
@@ -99,19 +101,96 @@ clars <- function(x, y, cost, maxk = 50, eps = 1e-6, trace = FALSE)
 
             # gamma <- gammas[newj]
             # direction <- sign(gamma)
+            ### METHOD 1
+
+            #### METHOD 2
+            # gamP <- rep(0, p)
+            # gamN <- rep(0, p)
+            # gamP[Inactive] <- (cmax - cvec[Inactive]) / (AA - a[Inactive])
+            # gamN[Inactive] <- (cmax + cvec[Inactive]) / (AA + a[Inactive])
+
+            # rP <- apply(cbind(gamP), 1, function(g) e - g * u)
+            # rN <- apply(cbind(gamN), 1, function(g) e - g * u)
+
+            # scoreP <- apply(rP, 2, var) * cost
+            # scoreN <- apply(rN, 2, var) * cost
+
+            # bestP <- min(abs(scoreP[Inactive &! skip]))
+            # bestN <- min(abs(scoreN[Inactive &! skip]))
+
+            # if (bestP < bestN)
+            # {
+            #     newj <- which(bestP == abs(scoreP))
+            #     gamma <- gamP[newj]
+            # } else {
+            #     newj <- which(bestN == abs(scoreN))
+            #     gamma <- gamN[newj]
+            # }
+            # direction <- sign(gamma)
+            ### METHOD 2
+
+            ### METHOD 3
+            # scoreP <- cvec / cost
+            # scoreN <- cvec / cost
+
+            # best <- max(cvec[Inactive & !skip] / cost[Inactive & !skip])
+            # newj <- which(cvec / cost == best)
+
+            # gamP <- rep(0, p)
+            # gamN <- rep(0, p)
+            # gamP[Inactive] <- (cmax - cvec[Inactive]) / (AA - a[Inactive])
+            # gamN[Inactive] <- (cmax + cvec[Inactive]) / (AA + a[Inactive])
+
+            # gamvec <- c(gamP[newj], gamN[newj])
+            # temp <- min(abs(gamvec))
+            # direction <- sign(gamvec[which(temp == abs(gamvec))])
+            # gamma <- direction * temp
+            ### METHOD 3
+
+            ### METHOD 4
+            # price <- sum(cost[Active])
+
+            # gamP <- rep(0, p)
+            # gamN <- rep(0, p)
+            # gamP[Inactive] <- (cmax - cvec[Inactive]) / (AA - a[Inactive])
+            # gamN[Inactive] <- (cmax + cvec[Inactive]) / (AA + a[Inactive])
+            # scoreP <- rep(0, p)
+            # scoreN <- rep(0, p)
+            # scoreP[Inactive] <- (cmax - gamP[Inactive] * a[Inactive]) / (price + cost[Inactive])
+            # scoreN[Inactive] <- (cmax - gamN[Inactive] * a[Inactive]) / (price + cost[Inactive])
+            # nextmax <- max(abs(scoreP[Inactive]), abs(scoreN[Inactive]))
+            # newj <- which(nextmax == c(abs(scoreP), abs(scoreN)))
+            # if (newj > p)
+            # {
+            #     newj <- newj - p
+            #     gamma <- gamN[newj]
+            # } else {
+            #     gamma <- gamP[newj]
+            # }
+            # direction <- sign(gamma)
+            ### METHOD 4
+
+            ### METHOD 5
+            price <- sum(cost[Active])
 
             gamP <- rep(0, p)
             gamN <- rep(0, p)
             gamP[Inactive] <- (cmax - cvec[Inactive]) / (AA - a[Inactive])
             gamN[Inactive] <- (cmax + cvec[Inactive]) / (AA + a[Inactive])
-
-            best <- max(cvec[Inactive & !skip] / cost[Inactive & !skip])
-            newj <- which(cvec / cost == best)
-
-            gamvec <- c(gamP[newj], gamN[newj])
-            temp <- min(abs(gamvec))
-            direction <- sign(gamvec[which(temp == abs(gamvec))])
-            gamma <- direction * temp
+            gamvec <- apply(cbind(gamP, gamN), 1, mingt0)
+            scoreP <- cvec - gamvec * a
+            scoreN <- (cvec - gamvec * a) / (price + cost)
+            if (exists("LASSO") & LASSO)
+            {
+                best <- max(abs(scoreP[Inactive &! skip]))
+                newj <- which(best == abs(scoreP))
+            } else {
+                best <- max(abs(scoreN[Inactive &! skip]))
+                newj <- which(best == abs(scoreN))
+            }
+            gamma <- gamvec[newj]
+            direction <- sign(gamma)
+            ### METHOD 5
 
             j[newj] <- TRUE
         }
@@ -153,6 +232,9 @@ clars <- function(x, y, cost, maxk = 50, eps = 1e-6, trace = FALSE)
                 skip[outj] <- TRUE
             }
         }
+        mu <- mu + drop(gamma) * u
+        beta[k + 1, Active] <- beta[k, Active] + drop(gamma) * w * Signs
+        mul[k + 1, ] <- mu
         if (trace)
         {
             cat("\nIteration: ")
@@ -177,22 +259,28 @@ clars <- function(x, y, cost, maxk = 50, eps = 1e-6, trace = FALSE)
             cat("Selected gamma: ")
             cat(drop(gamma))
             cat("\n")
+            cat("Current SS: ")
+            cat(var(e))
+            cat("\n")
+
             trace.out$In <- ifelse(Inactive, "Out", "In")
             trace.out$In[!Active & j] <- "next"
             trace.out$In[skip] <- "skip"
             # trace.out$cont <- ifelse(contenders, "Y", "N")
             trace.out$cvec <- cvec
             trace.out$score <- cvec / cost
+            trace.out$scoreP <- scoreP
+            trace.out$scoreN <- scoreN
             trace.out$gammaP <- gamP
             trace.out$gammaN <- gamN
-            # trace.out$gamtilde <- gammaj
-            trace.out$beta <- beta[k, ]
+            trace.out$gamtilde <- gammaj
+            ww <- rep(0, p)
+            ww[Active] <- w
+            trace.out$w <- ww
+            trace.out$beta <- beta[k + 1, ]
             print(trace.out)
             cat("\n\n")
         }
-        mu <- mu + drop(gamma) * u
-        beta[k + 1, Active] <- beta[k, Active] + drop(gamma) * w * Signs
-        mul[k + 1, ] <- mu
         Active <- j
     }
 

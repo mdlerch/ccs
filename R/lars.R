@@ -21,6 +21,7 @@ mlars <- function(x, y, maxk = 1000, eps = 1e-6, trace = FALSE)
     # number)
     nv <- 0
 
+    trace.out <- data.frame(var = colnames(x))
 
     beta <- matrix(0, nrow = maxk + 1, ncol = p)
     mul <- matrix(0, nrow = maxk + 1, ncol = n)
@@ -29,7 +30,6 @@ mlars <- function(x, y, maxk = 1000, eps = 1e-6, trace = FALSE)
     {
         k <- k + 1
 
-        if (trace) { cat("\nIteration: "); cat(k); cat("\n"); }
         # 1. Find the next variable to add.
         # Calculate the projections (correlations) along the residuals (y - mu)
         # on each x. Find the largest of these projections and add that variable
@@ -45,9 +45,6 @@ mlars <- function(x, y, maxk = 1000, eps = 1e-6, trace = FALSE)
         Inactive <- !Active
         nv <- nv + 1
 
-        if (trace) { cat("selected: "); cat(colnames(x)[Active]); cat("\n") }
-        if (trace) { print(cbind(cvec[Active])) }
-        if (trace) { print(cbind(cvec[Inactive])) }
         # 2. Find unit-vector of equal projection.
         # Following equations 2.4 through 2.6
 
@@ -88,22 +85,38 @@ mlars <- function(x, y, maxk = 1000, eps = 1e-6, trace = FALSE)
             # Equation 2.13
             temp <- c((cmax - cvec[Inactive]) / (AA - a[Inactive]),
                       (cmax + cvec[Inactive]) / (AA + a[Inactive]))
+            gamP <- rep(0, p)
+            gamN <- rep(0, p)
+            gamP[Inactive] <- (cmax - cvec[Inactive]) / (AA - a[Inactive])
+            gamN[Inactive] <- (cmax + cvec[Inactive]) / (AA + a[Inactive])
             gamma <- min(temp[temp > eps], cmax / AA)
-            if (trace)
-            {
-                cat("gamma: "); cat(gamma)
-                cat("cmax/A: "); cat(cmax/AA)
-                cat("\nNew score: ")
-                cat(cmax - gamma * AA)
-                cat("\ncmax: ")
-                cat(cmax)
-                cat("\nnextmax: ")
-                cat(max(cvec[Inactive]))
-                cat("\n")
-            }
+
             mu <- mu + gamma * u
             beta[k + 1, Active] <- beta[k, Active] + gamma * w * Signs
             mul[k + 1, ] <- mu
+            if (trace)
+            {
+                cat("\nIteration: ")
+                cat(k)
+                cat("\nCurrent number of variables: ")
+                cat(nv)
+                cat("\n")
+                cat("Selected gamma: ")
+                cat(drop(gamma))
+                cat("\nOR: ")
+                cat(cmax / AA)
+                cat("\n")
+
+                trace.out$In <- ifelse(Inactive, "Out", "In")
+                trace.out$In[!Active & j] <- "next"
+                # trace.out$cont <- ifelse(contenders, "Y", "N")
+                trace.out$cvec <- cvec
+                trace.out$gammaP <- gamP
+                trace.out$gammaN <- gamN
+                trace.out$beta <- beta[k + 1, ]
+                print(trace.out)
+                cat("\n\n")
+            }
         }
 
     }
