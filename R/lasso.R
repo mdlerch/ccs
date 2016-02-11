@@ -1,4 +1,4 @@
-mlasso <- function(x, y, maxk = 1000, eps = 1e-6)
+mlasso <- function(x, y, maxk = 1000, eps = 1e-6, trace = FALSE)
 {
     x <- scale(x)
     # variable setup

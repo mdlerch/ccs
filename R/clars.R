@@ -180,14 +180,14 @@ clars <- function(x, y, cost, maxk = 50, eps = 1e-6, trace = FALSE)
             gamvec <- apply(cbind(gamP, gamN), 1, mingt0)
             scoreP <- cvec - gamvec * a
             scoreN <- (cvec - gamvec * a) / (price + cost)
-            if (exists("LASSO") & LASSO)
-            {
-                best <- max(abs(scoreP[Inactive &! skip]))
-                newj <- which(best == abs(scoreP))
-            } else {
+            # if (exists("LASSO") & LASSO)
+            # {
+            #     best <- max(abs(scoreP[Inactive &! skip]))
+            #     newj <- which(best == abs(scoreP))
+            # } else {
                 best <- max(abs(scoreN[Inactive &! skip]))
                 newj <- which(best == abs(scoreN))
-            }
+            # }
             gamma <- gamvec[newj]
             direction <- sign(gamma)
             ### METHOD 5
