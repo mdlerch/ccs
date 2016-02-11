@@ -7,6 +7,8 @@ p <- ncol(x)
 y <- diabetes$y
 maxk <- 50
 eps <- 1e-9
+best <- order(abs(lm(y ~ x - 1)$coef))
+worst <- order(-abs(lm(y ~ x - 1)$coef))
 
 set.seed(95)
 
@@ -19,7 +21,7 @@ plotcanalyze(out, "train")
 plotcanalyze(out, "test")
 
 # 2. Random cost same order of magnitude
-cost <- round(runif(p, 10, 100)) / 10
+cost <- runif(p, 1, 10)
 out <- canalyze(x, y, cost, hold = 0.2)
 
 plotcanalyze(out, "full")
@@ -35,8 +37,15 @@ plotcanalyze(out, "train")
 plotcanalyze(out, "test")
 
 # 3. Best cost more. Best = largest lm coef
-order(abs(lm(y ~ x - 1)$coef))
-cost <- exp(runif(p, 1, 10))
+cost <- sort(runif(p, 1, 10))[best]
+out <- canalyze(x, y, cost, hold = 0.2)
+
+plotcanalyze(out, "full")
+plotcanalyze(out, "train")
+plotcanalyze(out, "test")
+
+# 3. Best cost less. Best = largest lm coef
+cost <- sort(runif(p, 1, 10))[worst]
 out <- canalyze(x, y, cost, hold = 0.2)
 
 plotcanalyze(out, "full")
