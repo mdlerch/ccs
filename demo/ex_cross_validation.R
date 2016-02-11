@@ -60,3 +60,4 @@ points(mlarsscore$score ~ mlarsscore$modelcost, col = "red", pch = 16, cex = 2)
 points(lassscore$score ~ lassscore$modelcost, col = "purple", pch = 16, cex = 2)
 
 plotlars(cout)
+plotclars(cout)
