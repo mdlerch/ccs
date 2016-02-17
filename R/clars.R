@@ -86,90 +86,6 @@ clars <- function(x, y, cost, maxk = 50, eps = 1e-6, trace = FALSE)
         {
             gamma <- cmax / AA
         } else {
-            ### METHOD 1
-            # opts <- Inactive & !skip
-            # gamP <- rep(0, p)
-            # gamN <- rep(0, p)
-            # gamP[opts] <- (cmax - cvec[opts]) / (AA - a[opts])
-            # gamN[opts] <- (cmax + cvec[opts]) / (AA + a[opts])
-
-            # gammas <- apply(cbind(gamP, gamN), 1, mindist)
-
-
-            # idx <- which.max((cvec[opts] - gammas[opts] * a[opts]) / cost[opts])
-            # newj <- which(cumsum(opts) == idx)[1]
-
-            # gamma <- gammas[newj]
-            # direction <- sign(gamma)
-            ### METHOD 1
-
-            #### METHOD 2
-            # gamP <- rep(0, p)
-            # gamN <- rep(0, p)
-            # gamP[Inactive] <- (cmax - cvec[Inactive]) / (AA - a[Inactive])
-            # gamN[Inactive] <- (cmax + cvec[Inactive]) / (AA + a[Inactive])
-
-            # rP <- apply(cbind(gamP), 1, function(g) e - g * u)
-            # rN <- apply(cbind(gamN), 1, function(g) e - g * u)
-
-            # scoreP <- apply(rP, 2, var) * cost
-            # scoreN <- apply(rN, 2, var) * cost
-
-            # bestP <- min(abs(scoreP[Inactive &! skip]))
-            # bestN <- min(abs(scoreN[Inactive &! skip]))
-
-            # if (bestP < bestN)
-            # {
-            #     newj <- which(bestP == abs(scoreP))
-            #     gamma <- gamP[newj]
-            # } else {
-            #     newj <- which(bestN == abs(scoreN))
-            #     gamma <- gamN[newj]
-            # }
-            # direction <- sign(gamma)
-            ### METHOD 2
-
-            ### METHOD 3
-            # scoreP <- cvec / cost
-            # scoreN <- cvec / cost
-
-            # best <- max(cvec[Inactive & !skip] / cost[Inactive & !skip])
-            # newj <- which(cvec / cost == best)
-
-            # gamP <- rep(0, p)
-            # gamN <- rep(0, p)
-            # gamP[Inactive] <- (cmax - cvec[Inactive]) / (AA - a[Inactive])
-            # gamN[Inactive] <- (cmax + cvec[Inactive]) / (AA + a[Inactive])
-
-            # gamvec <- c(gamP[newj], gamN[newj])
-            # temp <- min(abs(gamvec))
-            # direction <- sign(gamvec[which(temp == abs(gamvec))])
-            # gamma <- direction * temp
-            ### METHOD 3
-
-            ### METHOD 4
-            # price <- sum(cost[Active])
-
-            # gamP <- rep(0, p)
-            # gamN <- rep(0, p)
-            # gamP[Inactive] <- (cmax - cvec[Inactive]) / (AA - a[Inactive])
-            # gamN[Inactive] <- (cmax + cvec[Inactive]) / (AA + a[Inactive])
-            # scoreP <- rep(0, p)
-            # scoreN <- rep(0, p)
-            # scoreP[Inactive] <- (cmax - gamP[Inactive] * a[Inactive]) / (price + cost[Inactive])
-            # scoreN[Inactive] <- (cmax - gamN[Inactive] * a[Inactive]) / (price + cost[Inactive])
-            # nextmax <- max(abs(scoreP[Inactive]), abs(scoreN[Inactive]))
-            # newj <- which(nextmax == c(abs(scoreP), abs(scoreN)))
-            # if (newj > p)
-            # {
-            #     newj <- newj - p
-            #     gamma <- gamN[newj]
-            # } else {
-            #     gamma <- gamP[newj]
-            # }
-            # direction <- sign(gamma)
-            ### METHOD 4
-
             ### METHOD 5
             price <- sum(cost[Active])
 
@@ -195,12 +111,53 @@ clars <- function(x, y, cost, maxk = 50, eps = 1e-6, trace = FALSE)
             j[newj] <- TRUE
         }
 
+        # Going further than this is not a good idea
+        skip <- rep(FALSE, p)
+        cat("Gamma: ")
+        cat(gamma)
+        cat(" cmax / AA: ")
+        cat(cmax / AA)
+        cat("\n")
+        if (gamma > cmax / AA)
+        {
+            ord <- order(abs(scoreN[Inactive &! skip]), decreasing = TRUE)
+            gamopts <- gamvec[Inactive &! skip][ord]
+            j[newj] <- FALSE
+            if (trace)
+            {
+                cat("Trying to go further than appropriate\n")
+                cat(scoreN[Inactive &! skip][ord])
+                cat("\n")
+                cat(gamvec[Inactive &! skip][ord])
+                cat("\n")
+                cat(gamopts)
+                cat("\n")
+            }
+            # get first gamma small enough
+            if (!any(drop(gamopts) < drop(cmax / AA)))
+            {
+                gamma <- min(gamopts)
+                newj <- which(gamma == gamvec)
+                direction <- sign(gamma)
+                j[newj] <- TRUE
+
+            } else {
+                smallgam <- which(drop(gamopts) < drop(cmax / AA))[1]
+                best <- abs(scoreN[Inactive &! skip][ord])[smallgam]
+                newj <- which(best == abs(scoreN))
+                gamma <- gamvec[newj]
+                direction <- sign(gamma)
+                j[newj] <- TRUE
+            }
+
+        }
+
+
         # find gamma tilde for each j
         gammaj <- rep(0, p)
         gammaj[Active] <- -beta[k, Active] / (w * Signs)
         # If there are any gammaj that will eventually cross
         flag.cross <- FALSE
-        skip <- rep(FALSE, p)
         if (any(direction * gammaj > 0))
         {
             if (nv == p)
@@ -234,6 +191,18 @@ clars <- function(x, y, cost, maxk = 50, eps = 1e-6, trace = FALSE)
         }
         mu <- mu + drop(gamma) * u
         beta[k + 1, Active] <- beta[k, Active] + drop(gamma) * w * Signs
+        if (any(skip))
+        {
+            if (trace)
+            {
+                if (beta[k + 1, skip] != 0)
+                {
+                    cat("Should have been zero.  Was: ")
+                    cat(beta[k + 1, skip])
+                }
+            }
+            beta[k + 1, skip] <- 0
+        }
         mul[k + 1, ] <- mu
         if (trace)
         {
@@ -258,6 +227,9 @@ clars <- function(x, y, cost, maxk = 50, eps = 1e-6, trace = FALSE)
             cat("\n")
             cat("Selected gamma: ")
             cat(drop(gamma))
+            cat("\n")
+            cat("cmax / A: ")
+            cat(cmax / AA)
             cat("\n")
             cat("Current SS: ")
             cat(var(e))
