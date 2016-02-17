@@ -1,6 +1,6 @@
 clars <- function(x, y, cost, maxk = 50, eps = 1e-6, trace = FALSE)
 {
-    brute <- FALSE
+    go <- FALSE
     x <- scale(x)
     # variable setup
     n <- nrow(x); p <- ncol(x)
@@ -95,79 +95,20 @@ clars <- function(x, y, cost, maxk = 50, eps = 1e-6, trace = FALSE)
             gamP[Inactive] <- (cmax - cvec[Inactive]) / (AA - a[Inactive])
             gamN[Inactive] <- (cmax + cvec[Inactive]) / (AA + a[Inactive])
             gamvec <- apply(cbind(gamP, gamN), 1, mingt0)
+
             scoreP <- cvec - gamvec * a
             scoreN <- (cvec - gamvec * a) / (price + cost)
-            # if (exists("LASSO") & LASSO)
-            # {
-            #     best <- max(abs(scoreP[Inactive &! skip]))
-            #     newj <- which(best == abs(scoreP))
-            # } else {
-                best <- max(abs(scoreN[Inactive &! skip]))
-                newj <- which(best == abs(scoreN))
-            # }
+            best <- max(abs(scoreN[Inactive &! skip]))
+            newj <- which(best == abs(scoreN))
             gamma <- gamvec[newj]
+
             direction <- sign(gamma)
             ### METHOD 5
 
             j[newj] <- TRUE
         }
 
-        # Going further than this is not a good idea
         skip <- rep(FALSE, p)
-        if (gamma > cmax / AA)
-        {
-            if (trace)
-            {
-                cat("Gamma: ")
-                cat(gamma)
-                cat(" cmax / AA: ")
-                cat(cmax / AA)
-                cat("\n")
-                gamma <- cmax / AA
-            }
-            if (brute)
-            {
-                brute <- FALSE
-            } else {
-                nv <- nv - 1
-                j[newj] <- FALSE
-                brute <- TRUE
-            }
-            # ord <- order(abs(scoreN[Inactive &! skip]), decreasing = TRUE)
-            # gamopts <- gamvec[Inactive &! skip][ord]
-            # j[newj] <- FALSE
-            # if (trace)
-            # {
-            #     cat("Trying to go further than appropriate\n")
-            #     cat(scoreN[Inactive &! skip][ord])
-            #     cat("\n")
-            #     cat(gamvec[Inactive &! skip][ord])
-            #     cat("\n")
-            #     cat(gamopts)
-            #     cat("\n")
-            # }
-            # # get first gamma small enough
-            # if (!any(drop(gamopts) < drop(cmax / AA)))
-            # {
-            #     gamma <- min(gamopts)
-            #     newj <- which(gamma == gamvec)
-            #     direction <- sign(gamma)
-            #     j[newj] <- TRUE
-
-            # } else {
-            #     smallgam <- which(drop(gamopts) < drop(cmax / AA))[1]
-            #     best <- abs(scoreN[Inactive &! skip][ord])[smallgam]
-            #     newj <- which(best == abs(scoreN))
-            #     gamma <- gamvec[newj]
-            #     direction <- sign(gamma)
-            #     j[newj] <- TRUE
-            # }
-
-        } else {
-            brute <- FALSE
-        }
-
-
         # find gamma tilde for each j
         gammaj <- rep(0, p)
         gammaj[Active] <- -beta[k, Active] / (w * Signs)
@@ -204,6 +145,20 @@ clars <- function(x, y, cost, maxk = 50, eps = 1e-6, trace = FALSE)
                 skip[outj] <- TRUE
             }
         }
+
+        if (drop(gamma) > cmax / AA)
+        {
+            shortgamma <- cmax / AA
+            if (trace)
+            {
+                cat("\nIntermediate step\n")
+            }
+            mu <- mu + drop(shortgamma) * u
+            beta[k + 1, Active] <- beta[k, Active] + drop(shortgamma) * w * Signs
+            k <- k + 1
+            gamma <- gamma - shortgamma
+        }
+
         mu <- mu + drop(gamma) * u
         beta[k + 1, Active] <- beta[k, Active] + drop(gamma) * w * Signs
         if (any(skip))
