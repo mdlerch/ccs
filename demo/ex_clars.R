@@ -14,9 +14,10 @@ cost <- round(runif(p, 10, 100)) / 10
 
 cout <- clars(x, y, cost = cost, trace = TRUE, maxk = 100)
 mout <- mlars(x, y)
-plotlars(cout2)
+plotlars(cout)
+plotlars(mout)
 
-clarsscore <- evalclars(cout2, x, y, cost)
+
 
 mlarsscore <- evalclars(mout, x, y, cost)
 

@@ -12,7 +12,7 @@ worst <- order(-abs(lm(y ~ x - 1)$coef))
 
 set.seed(95)
 
-# 1. All variables cost same 
+# 1. All variables cost same
 cost <- rep(1, p)
 out <- canalyze(x, y, cost, hold = 0.2)
 
