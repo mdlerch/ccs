@@ -28,7 +28,7 @@ plotcanalyze(out, "full")
 plotcanalyze(out, "train")
 plotcanalyze(out, "test")
 
-# 2. Random cost same differing of magnitude
+# 2. Random cost differing of magnitude
 cost <- exp(runif(p, 1, 10))
 out <- canalyze(x, y, cost, hold = 0.2)
 

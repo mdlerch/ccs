@@ -12,7 +12,7 @@ p <- ncol(x)
 set.seed(42)
 cost <- round(runif(p, 10, 100)) / 10
 
-cout2 <- clars(x, y, cost = cost, trace = TRUE, type = 3, maxk = 100)
+cout <- clars(x, y, cost = cost, trace = TRUE, maxk = 100)
 mout <- mlars(x, y)
 plotlars(cout2)
 
