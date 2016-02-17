@@ -18,7 +18,6 @@ plotlars(cout)
 plotlars(mout)
 
 
-
 mlarsscore <- evalclars(mout, x, y, cost)
 
 plot(clarsscore$score ~ clarsscore$modelcost, type = "p", ylim = c(2500, 3600), col = "blue", pch = 16, cex = 2)
