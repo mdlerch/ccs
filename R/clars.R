@@ -19,8 +19,11 @@ clars <- function(x, y, cost, maxk = 50, eps = 1e-6, trace = FALSE)
     nv <- 0
 
     mu <- rep(0, n)
+    muS <- rep(0, n)
     beta <- matrix(0, nrow = maxk + 1, ncol = p)
     mul <- matrix(0, nrow = maxk + 1, ncol = n)
+    betaS <- matrix(0, nrow = maxk + 1, ncol = p)
+    mulS <- matrix(0, nrow = maxk + 1, ncol = n)
 
     # Equation 2.8
     e <- y - mu
@@ -149,18 +152,16 @@ clars <- function(x, y, cost, maxk = 50, eps = 1e-6, trace = FALSE)
         if (drop(gamma) > cmax / AA)
         {
             shortgamma <- cmax / AA
-            if (trace)
-            {
-                cat("\nIntermediate step\n")
-            }
-            mu <- mu + drop(shortgamma) * u
-            beta[k + 1, Active] <- beta[k, Active] + drop(shortgamma) * w * Signs
-            k <- k + 1
-            gamma <- gamma - shortgamma
+        } else {
+            shortgamma <- gamma
         }
 
+        muS <- mu + drop(shortgamma) * u
         mu <- mu + drop(gamma) * u
+        betaS[k + 1, Active] <- beta[k, Active] + drop(shortgamma) * w * Signs
         beta[k + 1, Active] <- beta[k, Active] + drop(gamma) * w * Signs
+
+        # TODO, need to worry about shortgamma here?
         if (any(skip))
         {
             if (trace)
@@ -173,7 +174,7 @@ clars <- function(x, y, cost, maxk = 50, eps = 1e-6, trace = FALSE)
             }
             beta[k + 1, skip] <- 0
         }
-        mul[k + 1, ] <- mu
+        mul[k + 1, ] <- muS
         if (trace)
         {
             cat("\nIteration: ")
