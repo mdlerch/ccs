@@ -149,7 +149,8 @@ clars <- function(x, y, cost, maxk = 50, eps = 1e-6, trace = FALSE)
             }
         }
 
-        if (drop(gamma) > cmax / AA)
+        # TODO: need to worry about gamma.tilde?
+        if (drop(gamma) > cmax / AA & !any(skip))
         {
             shortgamma <- cmax / AA
         } else {
@@ -161,7 +162,8 @@ clars <- function(x, y, cost, maxk = 50, eps = 1e-6, trace = FALSE)
         betaS[k + 1, Active] <- beta[k, Active] + drop(shortgamma) * w * Signs
         beta[k + 1, Active] <- beta[k, Active] + drop(gamma) * w * Signs
 
-        # TODO, need to worry about shortgamma here?
+        mul[k + 1, ] <- muS
+
         if (any(skip))
         {
             if (trace)
@@ -174,7 +176,6 @@ clars <- function(x, y, cost, maxk = 50, eps = 1e-6, trace = FALSE)
             }
             beta[k + 1, skip] <- 0
         }
-        mul[k + 1, ] <- muS
         if (trace)
         {
             cat("\nIteration: ")
@@ -227,5 +228,5 @@ clars <- function(x, y, cost, maxk = 50, eps = 1e-6, trace = FALSE)
         Active <- j
     }
 
-    list(beta = beta[1:(k + 1), ])
+    list(beta = betaS[1:(k + 1), ], beta2 = beta[1:(k + 1), ])
 }
