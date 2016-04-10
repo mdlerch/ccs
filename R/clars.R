@@ -1,5 +1,13 @@
-clars <- function(x, y, cost, maxk = 50, eps = 1e-6, trace = FALSE)
+clars <- function(x, y, cost, maxk = 50, eps = 1e-6, trace = FALSE, costfunc = NULL)
 {
+    # default costfunc is just sum of used variables
+    if (is.null(costfunc))
+    {
+        costfunc <- function(Active)
+        {
+            sum(cost[Active])
+        }
+    }
     go <- FALSE
     x <- scale(x)
     # variable setup
@@ -91,7 +99,14 @@ clars <- function(x, y, cost, maxk = 50, eps = 1e-6, trace = FALSE)
             gamma <- cmax / AA
         } else {
             ### METHOD 5
-            price <- sum(cost[Active])
+            # TODO: this can be made more efficient
+            price <- rep(0, p)
+            for (i in 1:p)
+            {
+                ActiveN <- Active
+                Active[i] <- TRUE
+                price[i] <- costfunc(Active)
+            }
 
             gamP <- rep(0, p)
             gamN <- rep(0, p)
@@ -100,7 +115,7 @@ clars <- function(x, y, cost, maxk = 50, eps = 1e-6, trace = FALSE)
             gamvec <- apply(cbind(gamP, gamN), 1, mingt0)
 
             scoreP <- cvec - gamvec * a
-            scoreN <- (cvec - gamvec * a) / (price + cost)
+            scoreN <- (cvec - gamvec * a) / price
             best <- max(abs(scoreN[Inactive &! skip]))
             newj <- which(best == abs(scoreN))
             gamma <- gamvec[newj]
