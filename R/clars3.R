@@ -1,4 +1,4 @@
-clars3 <- function(x, y, cost, maxk = 50, eps = 1e-6, trace = FALSE, costfunc = NULL)
+clars <- function(x, y, cost, maxk = 50, eps = 1e-6, trace = FALSE, costfunc = NULL)
 {
     # default costfunc is just sum of used variables
     if (is.null(costfunc))
@@ -107,7 +107,7 @@ clars3 <- function(x, y, cost, maxk = 50, eps = 1e-6, trace = FALSE, costfunc = 
             gamN <- rep(0, p)
             gamP[Inactive] <- (cmax - cvec[Inactive]) / (AA - a[Inactive])
             gamN[Inactive] <- (cmax + cvec[Inactive]) / (AA + a[Inactive])
-            gamvec <- apply(cbind(gamP, gamN), 1, mingt0)
+            gamvec <- apply(cbind(gamP, gamN), 1, chooseg)
             # TODO: too much pressure to pick ones that over shoot
 
             cvecP <- cmax - gamvec * AA
@@ -160,28 +160,23 @@ clars3 <- function(x, y, cost, maxk = 50, eps = 1e-6, trace = FALSE, costfunc = 
             }
         }
 
-        # TODO: need to worry about gamma.tilde?
-        # if (drop(gamma) > cmax / AA)
-        # {
-        #     cat("SHORT GAMMA!!\n\n")
-        #     # short gamma step
-        #     shortgamma <- cmax / AA
-        #     mu <- mu + drop(shortgamma) * u
-        #     mul[k + 1, ] <- mu
-        #     beta[k + 1, Active] <- beta[k, Active] + drop(shortgamma) * w * Signs
-        #     # whole gamma step
-        #     mu <- mul[k, ] + drop(gamma) * u
-        #     mul[k + 2, ] <- mu
-        #     beta[k + 2, Active] <- beta[k, Active] + drop(gamma) * w * Signs
-        #     k <- k + 1
-        # } else {
-        #     mu <- mu + drop(gamma) * u
-        #     mul[k + 1, ] <- mu
-        #     beta[k + 1, Active] <- beta[k, Active] + drop(gamma) * w * Signs
-        # }
+        # If gamma is longer than cmax/AA make a pit stop along the way
+        if (drop(gamma) > cmax / AA)
+        {
+            mu <- mu + drop(gamma) * u
+            # short gamma step
+            shortgamma <- cmax / AA
+            mul[k + 1, ] <- mul[k, ] + drop(shortgamma) * u
+            beta[k + 1, Active] <- beta[k, Active] + drop(shortgamma) * w * Signs
+            # whole gamma step
+            mul[k + 2, ] <- mu
+            beta[k + 2, Active] <- beta[k, Active] + drop(gamma) * w * Signs
+            k <- k + 1
+        } else {
             mu <- mu + drop(gamma) * u
             mul[k + 1, ] <- mu
             beta[k + 1, Active] <- beta[k, Active] + drop(gamma) * w * Signs
+        }
 
 
         if (any(skip))

@@ -48,6 +48,27 @@ mingt0 <- function(x)
     return(0)
 }
 
+chooseg <- function(x)
+{
+    # option order:
+    # 1. 0 < gammma < cmax / A
+    # 2. min(abs(gamma)) gamma < 0
+    # 3. gamma
+    id1 <- which(x[1:2] > 0 & x[1:2] < x[3])
+    if (any(id1))
+    {
+        return(min(x[id1]))
+    }
+
+    id2 <- which(x[1:2] < 0)
+    if (any(id2))
+    {
+        return(max(x[id2]))
+    }
+
+    return(min(x[1:2]))
+}
+
 minlt0 <- function(x)
 {
     if (sum(x < 0) > 0)
