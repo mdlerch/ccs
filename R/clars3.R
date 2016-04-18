@@ -8,7 +8,7 @@ clars <- function(x, y, cost, maxk = 50, eps = 1e-6, trace = FALSE, costfunc = N
             sum(cost[Active])
         }
     }
-    go <- FALSE
+    lastgam <- 10000
     x <- scale(x)
     # variable setup
     n <- nrow(x); p <- ncol(x)
@@ -93,7 +93,7 @@ clars <- function(x, y, cost, maxk = 50, eps = 1e-6, trace = FALSE, costfunc = N
         {
             gamma <- cmax / AA
         } else {
-            ### METHOD 5
+            gmax <- cmax / AA
             price1 <- sum(cost[Active])
             # TODO: this can be made more efficient
             price <- rep(0, p)
@@ -107,7 +107,42 @@ clars <- function(x, y, cost, maxk = 50, eps = 1e-6, trace = FALSE, costfunc = N
             gamN <- rep(0, p)
             gamP[Inactive] <- (cmax - cvec[Inactive]) / (AA - a[Inactive])
             gamN[Inactive] <- (cmax + cvec[Inactive]) / (AA + a[Inactive])
-            gamvec <- apply(cbind(gamP, gamN), 1, chooseg)
+
+            # First choice, gamma between 0 and cmax/A
+            gamvec <- apply(cbind(gamP, gamN), 1, mingt0)
+
+            legal <- gamvec < drop(cmax / AA)
+
+            if (any(Inactive &! skip & legal))
+            {
+                cvecP <- cmax - gamvec * AA
+                score <- abs((cvecP) / price)
+                best <- max(abs(score[Inactive &! skip & legal]))
+                newj <- which(best == score)
+                gamma <- gamvec[newj]
+                lastgam <- gamma
+            } else {
+                gamvec <- apply(cbind(gamP, gamN), 1, maxlt0)
+                legal <- abs(gamvec) < lastgam & gamvec != 0
+                if (any(Inactive &! skip & legal))
+                {
+                    cvecP <- cmax - gamvec * AA
+                    score <- abs((cvecP) * price)
+                    best <- min(abs(score[Inactive &! skip & legal]))
+                    newj <- which(best == score)
+                    gamma <- gamvec[newj]
+                } else {
+                    gamvec <- apply(cbind(gamP, gamN), 1, minabs)
+                    cvecP <- cmax - gamvec * AA
+                    score <- abs((cvecP) * price)
+                    best <- min(abs(score[Inactive &! skip]))
+                    newj <- which(best == score)
+                    gamma <- gamvec[newj]
+                }
+            }
+
+
+
             # TODO: too much pressure to pick ones that over shoot
 
             cvecP <- cmax - gamvec * AA
@@ -117,7 +152,6 @@ clars <- function(x, y, cost, maxk = 50, eps = 1e-6, trace = FALSE, costfunc = N
             gamma <- gamvec[newj]
 
             direction <- sign(gamma)
-            ### METHOD 5
 
             j[newj] <- TRUE
         }

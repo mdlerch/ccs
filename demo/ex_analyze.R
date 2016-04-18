@@ -19,8 +19,16 @@ set.seed(95)
 cost <- rep(1, p)
 out <- canalyze(x, y, cost, hold = 0.2)
 
+
+    n <- nrow(x)
+    ntest <- round(hold * n)
+    test <- sample(1:n, ntest, replace = FALSE)
+    train <- setdiff(1:n, test)
+    x <- x[train, ]
+    y <- y[train]
 cout <- clars(x, y, cost, maxk = 22, trace = TRUE)
-c3po <- clars3(x, y, maxk = 22, trace = TRUE)
+
+c3po <- clarsB(x, y, maxk = 22, trace = TRUE)
 mout <- mlars(x, y, maxk = 3, trace = TRUE)
 
 
@@ -32,8 +40,9 @@ plotcanalyze(out, "test")
 cost <- runif(p, 1, 10)
 out <- canalyze(x, y, cost, hold = 0.2)
 
-cout <- clars(x, y, cost, maxk = 4, trace = TRUE)
-c3po <- clars3(x, y, cost, maxk = 4, trace = TRUE)
+cout <- clars(x, y, cost, maxk = 100, trace = TRUE)
+coub <- clarsB(x, y, cost, maxk = 100, trace = TRUE)
+c3po <- clars3(x, y, cost, maxk = 100, trace = TRUE)
 
 plotcanalyze(out, "full")
 plotcanalyze(out, "train")

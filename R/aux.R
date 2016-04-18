@@ -69,13 +69,18 @@ chooseg <- function(x)
     return(min(x[1:2]))
 }
 
-minlt0 <- function(x)
+maxlt0 <- function(x)
 {
     if (sum(x < 0) > 0)
     {
-        return(min(x[x < 0]))
+        return(max(x[x < 0]))
     }
     return(0)
+}
+
+minabs <- function(x)
+{
+    return(x[which.min(abs(x))][1])
 }
 
 
