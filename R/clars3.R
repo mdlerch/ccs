@@ -146,8 +146,6 @@ clars <- function(x, y, cost, maxk = 50, eps = 1e-6, trace = FALSE, costfunc = N
                 }
             }
 
-            # TODO: too much pressure to pick ones that over shoot
-
             cvecP <- cmax - gamvec * AA
             score <- abs((cvecP) / price)
             best <- max(abs(score[Inactive &! skip]))
@@ -165,6 +163,8 @@ clars <- function(x, y, cost, maxk = 50, eps = 1e-6, trace = FALSE, costfunc = N
         gammaj[Active] <- -beta[k, Active] / (w * Signs)
         # If there are any gammaj that will eventually cross
         flag.cross <- FALSE
+        # TODO: gamma.tilde could also be negative if we choose a negative
+        # gamma...
         if (any(direction * gammaj > 0))
         {
             if (nv == p)
