@@ -1,8 +1,8 @@
 Package: cosso
 Type: Package
 Title: Cost considerate model selection and regularization
-Version: 0.0.10
-Date: 2016-04-11
+Version: 0.0.11
+Date: 2016-04-24
 Author: Michael Lerch
 Maintainer: Michael Lerch <mdlerch@gmail.com>
 Description: Build on top of Lars/Lasso/adaptive Lasso for cost considerate modeling

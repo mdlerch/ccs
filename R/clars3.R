@@ -110,9 +110,10 @@ clars <- function(x, y, cost, maxk = 50, eps = 1e-6, trace = FALSE, costfunc = N
 
             # First choice, gamma between 0 and cmax/A
             gamvec <- apply(cbind(gamP, gamN), 1, mingt0)
-
             legal <- gamvec < drop(cmax / AA)
 
+
+            # if first choice
             if (any(Inactive &! skip & legal))
             {
                 cvecP <- cmax - gamvec * AA
@@ -122,8 +123,10 @@ clars <- function(x, y, cost, maxk = 50, eps = 1e-6, trace = FALSE, costfunc = N
                 gamma <- gamvec[newj]
                 lastgam <- gamma
             } else {
-                gamvec <- apply(cbind(gamP, gamN), 1, maxlt0)
-                legal <- abs(gamvec) < lastgam & gamvec != 0
+                # second choice |gammas| smaller than cmax / A
+                # chosen by min c * price
+                gamvecN <- apply(cbind(gamP, gamN), 1, maxlt0)
+                legal <- abs(gamvec) < drop(cmax / AA) & gamvec != 0
                 if (any(Inactive &! skip & legal))
                 {
                     cvecP <- cmax - gamvec * AA
@@ -132,6 +135,8 @@ clars <- function(x, y, cost, maxk = 50, eps = 1e-6, trace = FALSE, costfunc = N
                     newj <- which(best == score)
                     gamma <- gamvec[newj]
                 } else {
+                    # third choice any gammas
+                    # chosen by min c * price
                     gamvec <- apply(cbind(gamP, gamN), 1, minabs)
                     cvecP <- cmax - gamvec * AA
                     score <- abs((cvecP) * price)
@@ -140,8 +145,6 @@ clars <- function(x, y, cost, maxk = 50, eps = 1e-6, trace = FALSE, costfunc = N
                     gamma <- gamvec[newj]
                 }
             }
-
-
 
             # TODO: too much pressure to pick ones that over shoot
 
