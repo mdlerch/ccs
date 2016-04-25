@@ -1,3 +1,4 @@
+# TODO: better strategy: normalize by saturated model cost?
 library(lars)
 library(cosso)
 data(diabetes)
