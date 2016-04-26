@@ -126,11 +126,20 @@ clars4 <- function(x, y, cost, maxk = 50, eps = 1e-6, trace = FALSE, costfunc = 
                 best <- max(abs(score[OK]))
                 newj <- which(best == score)
                 gamma <- gamvec[newj]
+                back <- 0
+                # TODO: probably put rest of code in here and have different
+                # code in next block
             } else {
                 # TODO: left off here
                 cat("No variables are OK\n")
                 cat("Last variable to enter:")
-                skipper <- which(matrixActive[k, ] &! matrixActive[k - 1, ])
+                if (back == 0)
+                {
+                    back <- k
+                } else {
+                    back <- back - 1
+                }
+                skipper <- which(matrixActive[back, ] &! matrixActive[back - 1, ])
                 cat(colnames(x)[skipper])
                 cat("\n")
                 print(matrixActive[1:(k + 1), ])
