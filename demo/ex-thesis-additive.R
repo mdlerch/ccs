@@ -42,8 +42,7 @@ cost <- runif(p, 1, 10)
 out <- canalyze(x, y, cost, hold = 0.2)
 
 cout <- clars(x, y, cost, maxk = 100, trace = TRUE)
-coub <- clarsB(x, y, cost, maxk = 100, trace = TRUE)
-c3po <- clars3(x, y, cost, maxk = 100, trace = TRUE)
+c4 <- clars4(x, y, cost, maxk = 100, trace = TRUE)
 
 plotcanalyze(out, "full")
 plotcanalyze(out, "train")

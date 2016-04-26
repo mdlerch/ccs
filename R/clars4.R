@@ -1,4 +1,4 @@
-clars <- function(x, y, cost, maxk = 50, eps = 1e-6, trace = FALSE, costfunc = NULL)
+clars4 <- function(x, y, cost, maxk = 50, eps = 1e-6, trace = FALSE, costfunc = NULL)
 {
     # default costfunc is just sum of used variables
     if (is.null(costfunc))
@@ -90,12 +90,14 @@ clars <- function(x, y, cost, maxk = 50, eps = 1e-6, trace = FALSE, costfunc = N
 
         a <- t(x) %*% u
 
+        ## to OLS solution
+        gmax <- drop(cmax / AA)
         if (nv == p)
         {
-            gamma <- cmax / AA
+            gamma <- gmax
         } else {
-            gmax <- cmax / AA
-            price1 <- sum(cost[Active])
+
+            # calculate each variables next price
             # TODO: this can be made more efficient
             price <- rep(0, p)
             for (i in 1:p)
@@ -104,6 +106,7 @@ clars <- function(x, y, cost, maxk = 50, eps = 1e-6, trace = FALSE, costfunc = N
                 ActiveN[i] <- TRUE
                 price[i] <- costfunc(ActiveN)
             }
+            # Two gamma calculations
             gamP <- rep(0, p)
             gamN <- rep(0, p)
             gamP[Inactive] <- (cmax - cvec[Inactive]) / (AA - a[Inactive])
@@ -111,49 +114,31 @@ clars <- function(x, y, cost, maxk = 50, eps = 1e-6, trace = FALSE, costfunc = N
 
             # First choice, gamma between 0 and cmax/A
             gamvec <- apply(cbind(gamP, gamN), 1, mingt0)
-            legal <- gamvec < drop(cmax / AA)
+            legal <- gamvec < gmax
+            nonzero <- gamvec != 0
 
-            # if first choice
-            if (any(Inactive &! skip & legal))
+            # Are there any variables that meet conditions?
+            OK <- Inactive & legal & nonzero &! skip
+            if (any(OK))
             {
                 cvecP <- cmax - gamvec * AA
                 score <- abs((cvecP) / price)
-                best <- max(abs(score[Inactive &! skip & legal]))
+                best <- max(abs(score[OK]))
                 newj <- which(best == score)
                 gamma <- gamvec[newj]
-                cat("First\n")
             } else {
-                # second choice |gammas| smaller than cmax / A
-                # chosen by min c * price
-                gamvecN <- apply(cbind(gamP, gamN), 1, maxlt0)
-                legal <- abs(gamvec) < drop(cmax / AA) & gamvec != 0
-                if (any(Inactive &! skip & legal))
-                {
-                    cvecP <- cmax - gamvec * AA
-                    score <- abs((cvecP) * price)
-                    best <- min(abs(score[Inactive &! skip & legal]))
-                    newj <- which(best == score)
-                    gamma <- gamvec[newj]
-                    cat("Second\n")
-                } else {
-                    # third choice any gammas
-                    # chosen by min c * price
-                    gamvec <- apply(cbind(gamP, gamN), 1, minabs)
-                    cvecP <- cmax - gamvec * AA
-                    score <- abs((cvecP) * price)
-                    best <- min(abs(score[Inactive &! skip]))
-                    newj <- which(best == score)
-                    gamma <- gamvec[newj]
-                    cat("Third\n")
-                }
-            }
+                # TODO: left off here
+                cat("No variables are OK\n")
+                cat("Last variable to enter:")
+                skipper <- which(matrixActive[k, ] &! matrixActive[k - 1, ])
+                cat(colnames(x)[skipper])
+                cat("\n")
+                print(matrixActive[1:(k + 1), ])
+                cat("\n")
 
-            # TODO: this undoes what I was trying to do.
-            # cvecP <- cmax - gamvec * AA
-            # score <- abs((cvecP) / price)
-            # best <- max(abs(score[Inactive &! skip]))
-            # newj <- which(best == score)
-            # gamma <- gamvec[newj]
+                gamma <- gmax
+
+            }
 
             direction <- sign(gamma)
 
@@ -211,6 +196,7 @@ clars <- function(x, y, cost, maxk = 50, eps = 1e-6, trace = FALSE, costfunc = N
             # whole gamma step
             mul[k + 2, ] <- mu
             beta[k + 2, Active] <- beta[k, Active] + drop(gamma) * w * Signs
+            matrixActive[k + 1, ] <- Active
 
             k <- k + 1
         } else {
@@ -280,6 +266,7 @@ clars <- function(x, y, cost, maxk = 50, eps = 1e-6, trace = FALSE, costfunc = N
             cat("\n\n")
         }
         Active <- j
+        matrixActive[k + 1, ] <- Active
     }
 
     list(beta = beta[1:(k + 1), ])
