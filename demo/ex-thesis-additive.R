@@ -15,6 +15,10 @@ set.seed(98)
 cost <- runif(p, 1, 10)
 c4 <- clars4(x, y, cost, maxk = 9, trace = TRUE)
 
+cls(x, y, cost, maxk = 50)
+cls(x, y, maxk = 12)
+mlars(x, y)$beta
+
 set.seed(95)
 
 cost <- rep(1, p)

@@ -18,8 +18,8 @@ cls <- function(x, y, cost, maxk = 50, eps = 1e-6, trace = FALSE, costfunc = NUL
     Inactive <- rep(TRUE, p)
     Active <- rep(FALSE, p)
 
-    activeMatrix <- matrix(FALSE, nrow = maxk, ncol = p)
-    skipMatrix <- matrix(FALSE, nrow = maxk, ncol = p)
+    activeMatrix <- matrix(FALSE, nrow = maxk + 1, ncol = p)
+    skipMatrix <- matrix(FALSE, nrow = maxk + 1, ncol = p)
     tree <- NULL
 
     Gram <- t(x) %*% x
@@ -42,16 +42,27 @@ cls <- function(x, y, cost, maxk = 50, eps = 1e-6, trace = FALSE, costfunc = NUL
     smax <- max(svec)
     j <- svec >= smax - eps
     Active <- j
+    newj <- which(j)
 
     tree <- 1
 
+    gmax <- 0
+
     while (nv < p & k < maxk)
     {
+        cat("tree: ")
+        cat(tree)
+        cat("\n")
+        # cat("Newest: ")
+        # cat(colnames(x)[newj])
+        # cat("  gmax: ")
+        # cat(gmax)
+        # cat("\n")
         k <- k + 1
         activeMatrix[k, ] <- Active
 
         Inactive <- !Active
-        nv <- nv + 1
+        nv <- sum(Active)
         e <- y - muC
         cvec <- t(x) %*% e
         cmax <- max(abs(cvec[Active]))
@@ -68,26 +79,106 @@ cls <- function(x, y, cost, maxk = 50, eps = 1e-6, trace = FALSE, costfunc = NUL
 
         ## to OLS solution
         gmax <- drop(cmax / AA)
-
-        price <- rep(0, p)
-        for (i in 1:p)
+        if (nv == p)
         {
-            ActiveN <- Active
-            ActiveN[i] <- TRUE
-            price[i] <- costfunc(ActiveN)
+            gamma <- gmax
+            muC <- muC + drop(gamma) * u
+            betaC[Active] <- betaC[Active] + drop(gamma) * w * Signs
+            mu[k, ] <- muC
+            beta[k, ] <- betaC
+            Active[newj] <- TRUE
+            activeMatrix[k, ] <- Active
+            tree <- c(k, tree)
+        } else {
+            price <- rep(0, p)
+            for (i in 1:p)
+            {
+                ActiveN <- Active
+                ActiveN[i] <- TRUE
+                price[i] <- costfunc(ActiveN)
+            }
+            # Two gamma calculations
+            gamP <- rep(0, p)
+            gamN <- rep(0, p)
+            gamP[Inactive] <- (cmax - cvec[Inactive]) / (AA - a[Inactive])
+            gamN[Inactive] <- (cmax + cvec[Inactive]) / (AA + a[Inactive])
+
+            # First choice, gamma between 0 and cmax/A
+            gamvec <- apply(cbind(gamP, gamN), 1, mingt0)
+
+            # cat("Skip these: ")
+            # cat(colnames(x)[skipMatrix[tree[1], ]])
+            # cat("\n")
+            OK <- Inactive & (gamvec < 2 * gmax) &! skipMatrix[tree[1], ]
+
+            if (any(OK))
+            {
+                cvecP <- cmax - gamvec * AA
+                score <- abs((cvecP) / price)
+                best <- max(abs(score[OK]))
+                newj <- which(best == score)
+                gamma <- gamvec[newj]
+                # TODO: add lasso part later
+
+                muC <- muC + drop(gamma) * u
+                betaC[Active] <- betaC[Active] + drop(gamma) * w * Signs
+                mu[k, ] <- muC
+                beta[k, ] <- betaC
+                Active[newj] <- TRUE
+                activeMatrix[k, ] <- Active
+                tree <- c(k, tree)
+            } else {
+                # complete the ols
+                gamma <- gmax
+                muC <- muC + drop(gamma) * u
+                betaC[Active] <- betaC[Active] + drop(gamma) * w * Signs
+                mu[k, ] <- muC
+                beta[k, ] <- betaC
+                Active[newj] <- TRUE
+                activeMatrix[k, ] <- Active
+
+                # revert
+                if (length(tree) == 1)
+                {
+                    betaC <- rep(0, p)
+                    muC <- rep(0, n)
+                    Active <- rep(FALSE, p)
+                }
+                toskip <- which(activeMatrix[tree[1], ] &! activeMatrix[tree[2], ])
+                skipMatrix[tree[2], toskip] <- TRUE
+                # cat("Skip: ")
+                # cat(colnames(x)[toskip])
+                # cat("\n")
+                # cat("gmax: ")
+                # cat(gmax)
+                # cat("\n")
+                # cat("gamvec: ")
+                # cat(gamvec)
+                # cat("\n")
+                # cat("tree: ")
+                # cat(tree)
+                # cat("\n")
+                # cat("set: ")
+                # cat(colnames(x)[activeMatrix[tree[1], ]])
+                # cat("\n")
+                # cat("reset to\n")
+                # cat("beta: ")
+                betaC <- beta[tree[2], ]
+                # cat(betaC)
+                # cat("\n")
+                muC <- mu[tree[2], ]
+                # cat("active: ")
+                Active <- activeMatrix[tree[2], ]
+                # cat(colnames(x)[Active])
+                # cat("\n")
+                # cat("tree: ")
+                tree <- tree[-1]
+                # cat(tree)
+                # cat("\n")
+                newj <- NA
+            }
         }
-        # Two gamma calculations
-        gamP <- rep(0, p)
-        gamN <- rep(0, p)
-        gamP[Inactive] <- (cmax - cvec[Inactive]) / (AA - a[Inactive])
-        gamN[Inactive] <- (cmax + cvec[Inactive]) / (AA + a[Inactive])
-
-        # First choice, gamma between 0 and cmax/A
-        gamvec <- apply(cbind(gamP, gamN), 1, mingt0)
-
-
-
-
-
-
     }
+
+    return(beta[1:k, ])
+}
