@@ -1,4 +1,4 @@
-clars4 <- function(x, y, cost, maxk = 50, eps = 1e-6, trace = FALSE, costfunc = NULL)
+cls <- function(x, y, cost, maxk = 50, eps = 1e-6, trace = FALSE, costfunc = NULL)
 {
     # default costfunc is just sum of used variables
     if (is.null(costfunc))
@@ -25,7 +25,7 @@ clars4 <- function(x, y, cost, maxk = 50, eps = 1e-6, trace = FALSE, costfunc = 
     Gram <- t(x) %*% x
 
     # number of steps
-    k <- 0
+    k <- 1
     # number of variables currently in model
     nv <- 0
 
@@ -43,10 +43,13 @@ clars4 <- function(x, y, cost, maxk = 50, eps = 1e-6, trace = FALSE, costfunc = 
     j <- svec >= smax - eps
     Active <- j
 
-    trace.out <- data.frame(var = colnames(x), cost = cost)
+    tree <- 1
 
     while (nv < p & k < maxk)
     {
+        k <- k + 1
+        activeMatrix[k, ] <- Active
+
         Inactive <- !Active
         nv <- nv + 1
         e <- y - muC
@@ -66,7 +69,6 @@ clars4 <- function(x, y, cost, maxk = 50, eps = 1e-6, trace = FALSE, costfunc = 
         ## to OLS solution
         gmax <- drop(cmax / AA)
 
-
         price <- rep(0, p)
         for (i in 1:p)
         {
@@ -80,9 +82,9 @@ clars4 <- function(x, y, cost, maxk = 50, eps = 1e-6, trace = FALSE, costfunc = 
         gamP[Inactive] <- (cmax - cvec[Inactive]) / (AA - a[Inactive])
         gamN[Inactive] <- (cmax + cvec[Inactive]) / (AA + a[Inactive])
 
-            # First choice, gamma between 0 and cmax/A
-            gamvec <- apply(cbind(gamP, gamN), 1, mingt0)
-            legal <- gamvec < gmax
+        # First choice, gamma between 0 and cmax/A
+        gamvec <- apply(cbind(gamP, gamN), 1, mingt0)
+
 
 
 
