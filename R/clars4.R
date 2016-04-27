@@ -18,8 +18,6 @@ clars4 <- function(x, y, cost, maxk = 50, eps = 1e-6, trace = FALSE, costfunc = 
     Inactive <- rep(TRUE, p)
     Active <- rep(FALSE, p)
 
-    # tree branch
-    tree <- rep(0, maxk)
 
     Gram <- t(x) %*% x
 
@@ -28,12 +26,12 @@ clars4 <- function(x, y, cost, maxk = 50, eps = 1e-6, trace = FALSE, costfunc = 
     # number of variables currently in model
     nv <- 0
 
-    mu <- rep(0, n)
+    muC <- rep(0, n)
     beta <- matrix(0, nrow = maxk + 1, ncol = p)
-    mul <- matrix(0, nrow = maxk + 1, ncol = n)
+    mu <- matrix(0, nrow = maxk + 1, ncol = n)
 
     # Equation 2.8
-    e <- y - mu
+    e <- y - muC
     cvec <- t(x) %*% e
     cmax <- max(abs(cvec))
     svec <- abs(cvec) / cost
@@ -41,7 +39,9 @@ clars4 <- function(x, y, cost, maxk = 50, eps = 1e-6, trace = FALSE, costfunc = 
     j <- svec >= smax - eps
     Active <- j
 
-    matrixActive <- matrix(FALSE, nrow = maxk, ncol = p)
+    activeMatrix <- matrix(FALSE, nrow = maxk, ncol = p)
+    skipMatrix <- matrix(FALSE, nrow = maxk, ncol = p)
+    tree <- NULL
 
     trace.out <- data.frame(var = colnames(x), cost = cost)
 
@@ -76,7 +76,7 @@ clars4 <- function(x, y, cost, maxk = 50, eps = 1e-6, trace = FALSE, costfunc = 
         # 1. We have a new variable entering. Update residuals
         Inactive <- !Active
         nv <- nv + 1
-        e <- y - mu
+        e <- y - muC
         cvec <- t(x) %*% e
         cmax <- max(abs(cvec[Active]))
 
@@ -124,7 +124,7 @@ clars4 <- function(x, y, cost, maxk = 50, eps = 1e-6, trace = FALSE, costfunc = 
             OK <- Inactive & legal & nonzero &! skip
             if (any(OK))
             {
-                tree[k] <- tree[k - 1] + 1
+                tree <- c(k - 1, tree)
                 base <- k + 1
                 cvecP <- cmax - gamvec * AA
                 score <- abs((cvecP) / price)
@@ -133,8 +133,9 @@ clars4 <- function(x, y, cost, maxk = 50, eps = 1e-6, trace = FALSE, costfunc = 
                 gamma <- gamvec[newj]
 
             } else {
+                # Need to revert along the tree branch
                 # TODO: left off here
-                skipper <- which(matrixActive[base, ] &! matrixActive[base - 1, ])
+                skipper <- which(activeMatrix[k, ] &! activeMatrix[tree[1], ])
                 base <- base - 1
                 cat(colnames(x)[skipper])
                 cat(" was a bad idea")
@@ -147,8 +148,8 @@ clars4 <- function(x, y, cost, maxk = 50, eps = 1e-6, trace = FALSE, costfunc = 
                 print(beta[base, ])
                 cat("\n")
                 gamma <- gmax
-                mu <- mul[base, ]
-                Active <- matrixActive[base, ]
+                muC <- mu[base, ]
+                Active <- activeMatrix[base, ]
                 skip <- rep(FALSE, p)
                 skip[skipper] <- TRUE
                 next
@@ -202,20 +203,20 @@ clars4 <- function(x, y, cost, maxk = 50, eps = 1e-6, trace = FALSE, costfunc = 
         # If gamma is longer than cmax/AA make a pit stop along the way
         if (drop(gamma) > cmax / AA)
         {
-            mu <- mu + drop(gamma) * u
+            muC <- muC + drop(gamma) * u
             # short gamma step
             shortgamma <- cmax / AA
-            mul[k + 1, ] <- mul[k, ] + drop(shortgamma) * u
+            mu[k + 1, ] <- mu[k, ] + drop(shortgamma) * u
             beta[k + 1, Active] <- beta[k, Active] + drop(shortgamma) * w * Signs
             # whole gamma step
-            mul[k + 2, ] <- mu
+            mu[k + 2, ] <- muC
             beta[k + 2, Active] <- beta[k, Active] + drop(gamma) * w * Signs
-            matrixActive[k + 1, ] <- Active
+            activeMatrix[k + 1, ] <- Active
 
             k <- k + 1
         } else {
-            mu <- mu + drop(gamma) * u
-            mul[k + 1, ] <- mu
+            muC <- muC + drop(gamma) * u
+            mu[k + 1, ] <- muC
             beta[k + 1, Active] <- beta[k, Active] + drop(gamma) * w * Signs
         }
 
@@ -280,7 +281,7 @@ clars4 <- function(x, y, cost, maxk = 50, eps = 1e-6, trace = FALSE, costfunc = 
             cat("\n\n")
         }
         Active <- j
-        matrixActive[k + 1, ] <- Active
+        activeMatrix[k + 1, ] <- Active
     }
 
     list(beta = beta[1:(k + 1), ])
