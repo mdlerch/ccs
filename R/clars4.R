@@ -18,6 +18,9 @@ clars4 <- function(x, y, cost, maxk = 50, eps = 1e-6, trace = FALSE, costfunc = 
     Inactive <- rep(TRUE, p)
     Active <- rep(FALSE, p)
 
+    # tree branch
+    tree <- rep(0, maxk)
+
     Gram <- t(x) %*% x
 
     # number of steps
@@ -70,7 +73,7 @@ clars4 <- function(x, y, cost, maxk = 50, eps = 1e-6, trace = FALSE, costfunc = 
     {
         k <- k + 1
 
-        # 1. Find the next variable to add.
+        # 1. We have a new variable entering. Update residuals
         Inactive <- !Active
         nv <- nv + 1
         e <- y - mu
@@ -98,7 +101,7 @@ clars4 <- function(x, y, cost, maxk = 50, eps = 1e-6, trace = FALSE, costfunc = 
         } else {
 
             # calculate each variables next price
-            # TODO: this can be made more efficient
+            # TODO: can this be made more efficient?
             price <- rep(0, p)
             for (i in 1:p)
             {
@@ -121,32 +124,34 @@ clars4 <- function(x, y, cost, maxk = 50, eps = 1e-6, trace = FALSE, costfunc = 
             OK <- Inactive & legal & nonzero &! skip
             if (any(OK))
             {
+                tree[k] <- tree[k - 1] + 1
+                base <- k + 1
                 cvecP <- cmax - gamvec * AA
                 score <- abs((cvecP) / price)
                 best <- max(abs(score[OK]))
                 newj <- which(best == score)
                 gamma <- gamvec[newj]
-                back <- 0
-                # TODO: probably put rest of code in here and have different
-                # code in next block
+
             } else {
                 # TODO: left off here
-                cat("No variables are OK\n")
-                cat("Last variable to enter:")
-                if (back == 0)
-                {
-                    back <- k
-                } else {
-                    back <- back - 1
-                }
-                skipper <- which(matrixActive[back, ] &! matrixActive[back - 1, ])
+                skipper <- which(matrixActive[base, ] &! matrixActive[base - 1, ])
+                base <- base - 1
                 cat(colnames(x)[skipper])
+                cat(" was a bad idea")
                 cat("\n")
-                print(matrixActive[1:(k + 1), ])
+                cat("Base off of ")
+                cat(base - 1)
                 cat("\n")
-
+                cat("\n")
+                print(beta[1:(k + 1), ])
+                print(beta[base, ])
+                cat("\n")
                 gamma <- gmax
-
+                mu <- mul[base, ]
+                Active <- matrixActive[base, ]
+                skip <- rep(FALSE, p)
+                skip[skipper] <- TRUE
+                next
             }
 
             direction <- sign(gamma)
