@@ -11,16 +11,18 @@ eps <- 1e-9
 best <- order(abs(lm(y ~ x - 1)$coef))
 worst <- order(-abs(lm(y ~ x - 1)$coef))
 
+set.seed(98)
+cost <- runif(p, 1, 10)
+c4 <- clars4(x, y, cost, maxk = 9, trace = TRUE)
+
 set.seed(95)
 
 cost <- rep(1, p)
 out <- canalyze(x, y, cost, hold = 0.2)
 cost <- runif(p, 1, 10)
 out <- canalyze(x, y, cost, hold = 0.2)
-
-set.seed(98)
-cost <- runif(p, 1, 10)
 c4 <- clars4(x, y, cost, maxk = 9, trace = TRUE)
+
 
 
 
