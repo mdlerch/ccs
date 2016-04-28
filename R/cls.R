@@ -20,6 +20,7 @@ cls <- function(x, y, cost, maxk = 50, eps = 1e-6, trace = FALSE, costfunc = NUL
 
     activeMatrix <- matrix(FALSE, nrow = maxk + 1, ncol = p)
     skipMatrix <- matrix(FALSE, nrow = maxk + 1, ncol = p)
+    treeMatrix <- matrix(0, nrow = maxk + 1, ncol = maxk + 1)
     tree <- NULL
 
     Gram <- t(x) %*% x
