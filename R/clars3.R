@@ -112,6 +112,7 @@ clars <- function(x, y, cost, maxk = 50, eps = 1e-6, trace = FALSE, costfunc = N
             # First choice, gamma between 0 and cmax/A
             gamvec <- apply(cbind(gamP, gamN), 1, mingt0)
             legal <- gamvec < drop(cmax / AA)
+            legal2 <- gamvec < 2 * drop(cmax / AA)
 
             # if first choice
             if (any(Inactive &! skip & legal))
@@ -121,31 +122,19 @@ clars <- function(x, y, cost, maxk = 50, eps = 1e-6, trace = FALSE, costfunc = N
                 best <- max(abs(score[Inactive &! skip & legal]))
                 newj <- which(best == score)
                 gamma <- gamvec[newj]
-                cat("First\n")
+            } else if (any(Inactive &! skip & legal2)) {
+                cvecP <- cmax - gamvec * AA
+                score <- abs((cvecP) / price)
+                best <- max(abs(score[Inactive &! skip & legal2]))
+                newj <- which(best == score)
+                gamma <- gamvec[newj]
             } else {
-                # second choice |gammas| smaller than cmax / A
-                # chosen by min c * price
-                gamvecN <- apply(cbind(gamP, gamN), 1, maxlt0)
-                legal <- abs(gamvec) < drop(cmax / AA) & gamvec != 0
-                if (any(Inactive &! skip & legal))
-                {
-                    cvecP <- cmax - gamvec * AA
-                    score <- abs((cvecP) * price)
-                    best <- min(abs(score[Inactive &! skip & legal]))
-                    newj <- which(best == score)
-                    gamma <- gamvec[newj]
-                    cat("Second\n")
-                } else {
-                    # third choice any gammas
-                    # chosen by min c * price
-                    gamvec <- apply(cbind(gamP, gamN), 1, minabs)
-                    cvecP <- cmax - gamvec * AA
-                    score <- abs((cvecP) * price)
-                    best <- min(abs(score[Inactive &! skip]))
-                    newj <- which(best == score)
-                    gamma <- gamvec[newj]
-                    cat("Third\n")
-                }
+                gamvec <- apply(cbind(gamP, gamN), 1, minabs)
+                cvecP <- cmax - gamvec * AA
+                score <- abs((cvecP) * price)
+                best <- min(abs(score[Inactive &! skip]))
+                newj <- which(best == score)
+                gamma <- gamvec[newj]
             }
 
             # TODO: this undoes what I was trying to do.

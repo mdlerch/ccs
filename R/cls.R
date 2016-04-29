@@ -114,9 +114,19 @@ cls <- function(x, y, cost, maxk = 50, eps = 1e-6, trace = FALSE, costfunc = NUL
 
             if (any(OK))
             {
+                # TODO: At this point we know that we have a gamma less than 2 *
+                # gmax, so first try the ones less than gmax
+                under <- OK & (gamvec < gmax)
                 cvecP <- cmax - gamvec * AA
+                # score <- abs((cvecP) / price)
+                # best <- max(abs(score[OK]))
                 score <- abs((cvecP) / price)
-                best <- max(abs(score[OK]))
+                if (any(under))
+                {
+                    best <- max(abs(score[under]))
+                } else {
+                    best <- min(abs(score[OK]))
+                }
                 newj <- which(best == score)
                 gamma <- gamvec[newj]
                 # TODO: add lasso part later

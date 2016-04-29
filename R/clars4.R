@@ -143,7 +143,7 @@ clars4 <- function(x, y, cost, maxk = 50, eps = 1e-6, trace = FALSE, costfunc = 
 
             # First choice, gamma between 0 and cmax/A
             gamvec <- apply(cbind(gamP, gamN), 1, mingt0)
-            legal <- gamvec < gmax
+            legal <- gamvec < 2 * gmax
 
             # Are there any variables that meet conditions?
             if (length(tree))

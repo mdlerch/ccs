@@ -13,7 +13,8 @@ worst <- order(-abs(lm(y ~ x - 1)$coef))
 
 set.seed(98)
 cost <- runif(p, 1, 10)
-c4 <- clars4(x, y, cost, maxk = 9, trace = TRUE)
+c4 <- clars4(x, y, cost, maxk = 50, trace = TRUE)
+c3 <- clars(x, y, cost, maxk = 50, trace = TRUE)
 
 cls(x, y, cost, maxk = 50)
 cls(x, y, maxk = 12)
