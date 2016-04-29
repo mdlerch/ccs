@@ -16,7 +16,7 @@ canalyze <- function(x, y, cost, hold = 0.2, maxk = 500, eps = 1e-5)
     ytest <- y[test]
 
     cout <- clars(x, y, cost, maxk = maxk)
-    cou2 <- clars2(x, y, cost, maxk = maxk)
+    cou2 <- cls(x, y, cost, maxk = maxk)
     mout <- mlars(x, y, maxk = maxk)
     lout <- mlasso(x, y)
 
@@ -42,4 +42,3 @@ canalyze <- function(x, y, cost, hold = 0.2, maxk = 500, eps = 1e-5)
 
     return(result)
 }
-

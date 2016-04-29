@@ -54,11 +54,6 @@ cls <- function(x, y, cost, maxk = 50, eps = 1e-6, trace = FALSE, costfunc = NUL
         cat("tree: ")
         cat(tree)
         cat("\n")
-        # cat("Newest: ")
-        # cat(colnames(x)[newj])
-        # cat("  gmax: ")
-        # cat(gmax)
-        # cat("\n")
         k <- k + 1
         activeMatrix[k, ] <- Active
 
@@ -157,39 +152,14 @@ cls <- function(x, y, cost, maxk = 50, eps = 1e-6, trace = FALSE, costfunc = NUL
                 }
                 toskip <- which(activeMatrix[tree[1], ] &! activeMatrix[tree[2], ])
                 skipMatrix[tree[2], toskip] <- TRUE
-                # cat("Skip: ")
-                # cat(colnames(x)[toskip])
-                # cat("\n")
-                # cat("gmax: ")
-                # cat(gmax)
-                # cat("\n")
-                # cat("gamvec: ")
-                # cat(gamvec)
-                # cat("\n")
-                # cat("tree: ")
-                # cat(tree)
-                # cat("\n")
-                # cat("set: ")
-                # cat(colnames(x)[activeMatrix[tree[1], ]])
-                # cat("\n")
-                # cat("reset to\n")
-                # cat("beta: ")
                 betaC <- beta[tree[2], ]
-                # cat(betaC)
-                # cat("\n")
                 muC <- mu[tree[2], ]
-                # cat("active: ")
                 Active <- activeMatrix[tree[2], ]
-                # cat(colnames(x)[Active])
-                # cat("\n")
-                # cat("tree: ")
                 tree <- tree[-1]
-                # cat(tree)
-                # cat("\n")
                 newj <- NA
             }
         }
     }
 
-    return(beta[1:k, ])
+    return(list(beta = beta[1:k, ]))
 }

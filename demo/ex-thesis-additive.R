@@ -16,7 +16,7 @@ cost <- runif(p, 1, 10)
 c4 <- clars4(x, y, cost, maxk = 50, trace = TRUE)
 c3 <- clars(x, y, cost, maxk = 50, trace = TRUE)
 
-cls(x, y, cost, maxk = 50)
+cs <- cls(x, y, cost, maxk = 50)
 cls(x, y, maxk = 12)
 mlars(x, y)$beta
 
