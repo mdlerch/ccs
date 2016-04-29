@@ -1,3 +1,4 @@
+# Original
 clarsB <- function(x, y, cost, maxk = 50, eps = 1e-6, trace = FALSE, costfunc = NULL)
 {
     # default costfunc is just sum of used variables
@@ -8,7 +9,6 @@ clarsB <- function(x, y, cost, maxk = 50, eps = 1e-6, trace = FALSE, costfunc = 
             sum(cost[Active])
         }
     }
-    go <- FALSE
     x <- scale(x)
     # variable setup
     n <- nrow(x); p <- ncol(x)

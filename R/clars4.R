@@ -1,3 +1,4 @@
+# Try to add tree methodology
 clars4 <- function(x, y, cost, maxk = 50, eps = 1e-6, trace = FALSE, costfunc = NULL)
 {
     # default costfunc is just sum of used variables
