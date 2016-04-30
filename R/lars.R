@@ -121,5 +121,5 @@ mlars <- function(x, y, maxk = 1000, eps = 1e-6, trace = FALSE)
 
     }
 
-    list(beta = beta[1:(k + 1), ])
+    list(mu = mul[1:(k + 1), ], beta = beta[1:(k + 1), ])
 }

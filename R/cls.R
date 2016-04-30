@@ -149,14 +149,15 @@ cls <- function(x, y, cost, maxk = 50, eps = 1e-6, trace = FALSE, costfunc = NUL
                     betaC <- rep(0, p)
                     muC <- rep(0, n)
                     Active <- rep(FALSE, p)
+                } else {
+                    toskip <- which(activeMatrix[tree[1], ] &! activeMatrix[tree[2], ])
+                    skipMatrix[tree[2], toskip] <- TRUE
+                    betaC <- beta[tree[2], ]
+                    muC <- mu[tree[2], ]
+                    Active <- activeMatrix[tree[2], ]
+                    tree <- tree[-1]
+                    newj <- NA
                 }
-                toskip <- which(activeMatrix[tree[1], ] &! activeMatrix[tree[2], ])
-                skipMatrix[tree[2], toskip] <- TRUE
-                betaC <- beta[tree[2], ]
-                muC <- mu[tree[2], ]
-                Active <- activeMatrix[tree[2], ]
-                tree <- tree[-1]
-                newj <- NA
             }
         }
     }

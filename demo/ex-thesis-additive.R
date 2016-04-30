@@ -14,11 +14,39 @@ worst <- order(-abs(lm(y ~ x - 1)$coef))
 set.seed(98)
 cost <- runif(p, 1, 10)
 c4 <- clars4(x, y, cost, maxk = 50, trace = TRUE)
+ml <- mlars(x, y)
+
+
 c3 <- clars(x, y, cost, maxk = 50, trace = TRUE)
+
+
+Active <- rep(TRUE, 10)
+        nv <- sum(Active)
+muC <- x %*% c4$beta[f, ]
+        e <- y - muC
+        cvec <- t(x) %*% e
+        cmax <- max(abs(cvec[Active]))
+
+        # 2. Find unit-vector of equal projection.
+        Signs <- sign(cvec[Active])
+        XA <- x[ , Active] * rep(1, n) %*% t(Signs)
+        gA <- t(XA) %*% XA
+        one <- rep(1, sum(Active))
+        AA <- 1 / sqrt(one %*% solve(gA) %*% one)
+        w <- AA %*% t(solve(gA) %*% one)
+        u <- XA %*% t(w)
+
+        # 3. Increment model fit in the direction of u.
+
+        a <- t(x) %*% u
+
+
+
+
 
 cs <- cls(x, y, cost, maxk = 50)
 cls(x, y, maxk = 12)
-mlars(x, y)$beta
+mlars(x, y)$beta[11, ]
 
 set.seed(95)
 
@@ -30,6 +58,23 @@ c4 <- clars4(x, y, cost, maxk = 9, trace = TRUE)
 
 
 
+muC <- x %*% c4$beta[24, ]
+        e <- y - muC
+        cvec <- t(x) %*% e
+        cmax <- max(abs(cvec[Active]))
+
+        # 2. Find unit-vector of equal projection.
+        Signs <- sign(cvec[Active])
+        XA <- x[ , Active] * rep(1, n) %*% t(Signs)
+        gA <- t(XA) %*% XA
+        one <- rep(1, sum(Active))
+        AA <- 1 / sqrt(one %*% solve(gA) %*% one)
+        w <- AA %*% t(solve(gA) %*% one)
+        u <- XA %*% t(w)
+
+        # 3. Increment model fit in the direction of u.
+
+        a <- t(x) %*% u
 
 # 1. All variables cost same
 cost <- rep(1, p)

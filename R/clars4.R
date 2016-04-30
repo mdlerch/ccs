@@ -19,11 +19,17 @@ clars4 <- function(x, y, cost, maxk = 50, eps = 1e-6, trace = FALSE, costfunc = 
     Inactive <- rep(TRUE, p)
     Active <- rep(FALSE, p)
 
+    activeMatrix <- matrix(FALSE, nrow = maxk + 1, ncol = p)
+    skipMatrix <- matrix(FALSE, nrow = maxk + 1, ncol = p)
+    treeMatrix <- matrix(0, nrow = maxk + 1, ncol = maxk + 1)
+    treenum <- 1
+    tree <- NULL
+    maxdepth <- 1
 
     Gram <- t(x) %*% x
 
     # number of steps
-    k <- 0
+    k <- 1
     # number of variables currently in model
     nv <- 0
 
@@ -40,10 +46,11 @@ clars4 <- function(x, y, cost, maxk = 50, eps = 1e-6, trace = FALSE, costfunc = 
     smax <- max(svec)
     j <- svec >= smax - eps
     Active <- j
+    newj <- which(j)
 
-    activeMatrix <- matrix(FALSE, nrow = maxk, ncol = p)
-    skipMatrix <- matrix(FALSE, nrow = maxk, ncol = p)
-    tree <- NULL
+    tree <- 1
+
+    gmax <- 0
 
     trace.out <- data.frame(var = colnames(x), cost = cost)
 
@@ -59,8 +66,8 @@ clars4 <- function(x, y, cost, maxk = 50, eps = 1e-6, trace = FALSE, costfunc = 
         trace.out$In <- ifelse(Active, "In", "Out")
         trace.out$In[!Active & j] <- "next"
         # trace.out$cont <- 0
-        trace.out$cvecP <- 0
-        trace.out$score <- cvec /cost
+        trace.out$cvec <- cvec
+        trace.out$score <- cvec / cost
         trace.out$gammaP <- 0
         trace.out$gammaN <- 0
         trace.out$gamtilde <- 0
@@ -73,11 +80,16 @@ clars4 <- function(x, y, cost, maxk = 50, eps = 1e-6, trace = FALSE, costfunc = 
 
     while (nv < p & k < maxk)
     {
+
+        cat("tree: ")
+        cat(tree)
+        cat("\n")
         k <- k + 1
+        activeMatrix[k, ] <- Active
 
         # 1. We have a new variable entering. Update residuals
         Inactive <- !Active
-        nv <- nv + 1
+        nv <- sum(Active)
         e <- y - muC
         cvec <- t(x) %*% e
         cmax <- max(abs(cvec[Active]))
@@ -144,113 +156,53 @@ clars4 <- function(x, y, cost, maxk = 50, eps = 1e-6, trace = FALSE, costfunc = 
 
             # First choice, gamma between 0 and cmax/A
             gamvec <- apply(cbind(gamP, gamN), 1, mingt0)
-            legal <- gamvec < 2 * gmax
+            # TODO: how big can gamma be? can it be negative
+            OK <- Inactive & (gamvec < 2 * gmax) &! skipMatrix[tree[1], ]
 
-            # Are there any variables that meet conditions?
-            if (length(tree))
-            {
-                if (tree[1] == 0)
-                {
-                    OK <- Inactive & legal &! skip
-                } else {
-                    OK <- Inactive & legal &! skip &! skipMatrix[tree[1], ]
-                }
-            } else {
-                OK <- Inactive & legal &! skip
-            }
             if (any(OK))
             {
-                tree <- c(k, tree)
                 cvecP <- cmax - gamvec * AA
                 score <- abs((cvecP) / price)
+                # TODO: this includes all "acceptable"
                 best <- max(abs(score[OK]))
                 newj <- which(best == score)
                 gamma <- gamvec[newj]
-
+                # actual updates later in code
+                tree <- c(k, tree)
             } else {
-                # Need to revert along the tree branch
-                # TODO: left off here
-                # 1. Make a fake step here
-                beta[k, ] <- 0
-                # 2. Reset conditions to previous
-                betaC <- beta[tree[1], ]
-                muC <- mu[tree[1], ]
-                # 3. Record variable we must skip
-                skipper <- which(activeMatrix[tree[2], ] &! activeMatrix[tree[3], ])
+                # complete the ols
+                cat("one\n")
+                gamma <- gmax
+                muC <- muC + drop(gamma) * u
+                betaC[Active] <- betaC[Active] + drop(gamma) * w * Signs
+                mu[k, ] <- muC
+                beta[k, ] <- betaC
+                Active[newj] <- TRUE
+                activeMatrix[k, ] <- Active
 
-                skipMatrix[tree[1], skipper] <- TRUE
+                treeMatrix[ , treenum] <- c(tree, rep(0, maxk + 1 - length(tree)))
+                treenum <- treenum + 1
+                maxdepth <- max(maxdepth, length(tree))
 
-                Active <- activeMatrix[tree[1], ]
-
-                if (trace)
+                # revert
+                if (length(tree) == 1)
                 {
-                    cat("\nIteration: ")
-                    cat(k)
-                    cat("\nCurrent number of variables: ")
-                    cat(nv)
-                    # if (flag.contender)
-                    # {
-                    #     cat("\nNext in via contender: ")
-                    #     cat(as.character(trace.out$var[newj]))
-                    # } else {
-                    cat("\n")
-                    cat("None available!!!")
-                    cat("\n")
-                    cat("Remove variable: ")
-                    cat(colnames(x)[skipper])
-                    cat("\n")
-                    cat("cmax / A: ")
-                    cat(cmax / AA)
-                    cat("\n")
-                    cat("Current SS: ")
-                    cat(var(e))
-                    cat("\n")
-
-                    trace.out$In <- ifelse(Inactive, "Out", "In")
-                    trace.out$In[!Active & j] <- "next"
-                    trace.out$In[skip] <- "skip"
-                    # trace.out$cont <- ifelse(contenders, "Y", "N")
-                    trace.out$cvecP <- cvecP
-                    trace.out$score <- score
-                    trace.out$gammaP <- gamP
-                    trace.out$gammaN <- gamN
-                    trace.out$gamtilde <- gammaj
-                    ww <- rep(0, p)
-                    ww[Active] <- w
-                    trace.out$w <- ww
-                    trace.out$beta <- beta[k + 1, ]
-                    print(trace.out)
-                    cat("\n\n")
+                    # TODO: might need to set up a skipMatrix for tree == 0
+                    skipper <- which(activeMatrix[tree[1], ])
+                    betaC <- rep(0, p)
+                    muC <- rep(0, n)
+                    Active <- rep(FALSE, p)
+                } else {
+                    toskip <- which(activeMatrix[tree[1], ] &! activeMatrix[tree[2], ])
+                    skipMatrix[tree[2], toskip] <- TRUE
+                    betaC <- beta[tree[2], ]
+                    muC <- mu[tree[2], ]
+                    Active <- activeMatrix[tree[2], ]
+                    tree <- tree[-1]
+                    newj <- NA
                 }
-                cat("gmax: ")
-                cat(gmax)
-                cat("\n")
-                cat("gamvec: ")
-                cat(gamvec)
-                cat("\n")
-                cat(colnames(x)[skipper])
-                cat(" was a bad idea")
-                cat("\n")
-                cat("tree: ")
-                cat(tree)
-                cat("\n")
-                cat("Active:" )
-                cat(Active)
-                cat("\n")
-                cat("actmat:" )
-                cat(activeMatrix[tree[1], ])
-                cat("\n")
-                cat("Base off of ")
-                cat(tree[1])
-                cat("\n")
-                cat("skippers are: ")
-                cat(skipMatrix[tree[1], ])
-                cat("\n")
-                cat("updated beta is: ")
-                cat(betaC)
-                cat("\n")
 
-
+                # TODO: do i need this?
                 next
             }
 
@@ -272,7 +224,7 @@ clars4 <- function(x, y, cost, maxk = 50, eps = 1e-6, trace = FALSE, costfunc = 
         {
             if (nv == p)
             {
-                gamma <- cmax / AA
+                gamma <- gmax
                 temp <- gammaj
                 temp[temp <= 0] <- max(temp) + 1
                 outj <- which.min(temp)
@@ -301,12 +253,13 @@ clars4 <- function(x, y, cost, maxk = 50, eps = 1e-6, trace = FALSE, costfunc = 
         }
 
         # If gamma is longer than cmax/AA make a pit stop along the way
-        if (drop(gamma) > cmax / AA)
+        if (drop(gamma) > gmax)
         {
+            cat("two\n")
             muC <- muC + drop(gamma) * u
             betaC[Active] <- betaC[Active] + drop(gamma) * w * Signs
             # short gamma step
-            shortgamma <- cmax / AA
+            shortgamma <- gmax
             mu[k + 1, ] <- mu[k, ] + drop(shortgamma) * u
             beta[k + 1, Active] <- betaC[Active] + drop(shortgamma) * w * Signs
             # whole gamma step
@@ -316,10 +269,11 @@ clars4 <- function(x, y, cost, maxk = 50, eps = 1e-6, trace = FALSE, costfunc = 
 
             k <- k + 1
         } else {
+            cat("three\n")
             muC <- muC + drop(gamma) * u
             betaC[Active] <- betaC[Active] + drop(gamma) * w * Signs
             mu[k + 1, ] <- muC
-            beta[k + 1, Active] <- betaC[Active] + drop(gamma) * w * Signs
+            beta[k + 1, Active] <- betaC[Active]
         }
 
 
@@ -360,7 +314,7 @@ clars4 <- function(x, y, cost, maxk = 50, eps = 1e-6, trace = FALSE, costfunc = 
             cat(drop(gamma))
             cat("\n")
             cat("cmax / A: ")
-            cat(cmax / AA)
+            cat(gmax)
             cat("\n")
             cat("Current SS: ")
             cat(var(e))
@@ -370,7 +324,7 @@ clars4 <- function(x, y, cost, maxk = 50, eps = 1e-6, trace = FALSE, costfunc = 
             trace.out$In[!Active & j] <- "next"
             trace.out$In[skip] <- "skip"
             # trace.out$cont <- ifelse(contenders, "Y", "N")
-            trace.out$cvecP <- cvecP
+            trace.out$cvec <- cvec
             trace.out$score <- score
             trace.out$gammaP <- gamP
             trace.out$gammaN <- gamN
@@ -386,5 +340,8 @@ clars4 <- function(x, y, cost, maxk = 50, eps = 1e-6, trace = FALSE, costfunc = 
         activeMatrix[k, ] <- Active
     }
 
-    list(beta = beta[1:(k + 1), ])
+    treeMatrix[ , treenum] <- c(tree, rep(0, maxk + 1 - length(tree)))
+    maxdepth <- max(maxdepth, length(tree))
+
+    list(mu = mu[1:(k + 1), ], beta = beta[1:(k + 1), ], tree = treeMatrix[1:maxdepth, 1:treenum])
 }
