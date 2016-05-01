@@ -171,7 +171,6 @@ clars4 <- function(x, y, cost, maxk = 50, eps = 1e-6, trace = FALSE, costfunc = 
                 tree <- c(k, tree)
             } else {
                 # complete the ols
-                cat("one\n")
                 gamma <- gmax
                 muC <- muC + drop(gamma) * u
                 betaC[Active] <- betaC[Active] + drop(gamma) * w * Signs
@@ -255,25 +254,23 @@ clars4 <- function(x, y, cost, maxk = 50, eps = 1e-6, trace = FALSE, costfunc = 
         # If gamma is longer than cmax/AA make a pit stop along the way
         if (drop(gamma) > gmax)
         {
-            cat("two\n")
-            muC <- muC + drop(gamma) * u
-            betaC[Active] <- betaC[Active] + drop(gamma) * w * Signs
             # short gamma step
             shortgamma <- gmax
-            mu[k + 1, ] <- mu[k, ] + drop(shortgamma) * u
-            beta[k + 1, Active] <- betaC[Active] + drop(shortgamma) * w * Signs
+            mu[k, ] <- muC + drop(shortgamma) * u
+            beta[k, Active] <- betaC[Active] + drop(shortgamma) * w * Signs
             # whole gamma step
-            mu[k + 2, ] <- muC
-            beta[k + 2, Active] <- betaC[Active] + drop(gamma) * w * Signs
-            activeMatrix[k + 1, ] <- Active
-
-            k <- k + 1
-        } else {
-            cat("three\n")
             muC <- muC + drop(gamma) * u
             betaC[Active] <- betaC[Active] + drop(gamma) * w * Signs
             mu[k + 1, ] <- muC
             beta[k + 1, Active] <- betaC[Active]
+            # TODO: do i want this?
+            activeMatrix[k + 1, ] <- Active
+            k <- k + 1
+        } else {
+            muC <- muC + drop(gamma) * u
+            betaC[Active] <- betaC[Active] + drop(gamma) * w * Signs
+            mu[k, ] <- muC
+            beta[k, Active] <- betaC[Active]
         }
 
 
@@ -281,13 +278,13 @@ clars4 <- function(x, y, cost, maxk = 50, eps = 1e-6, trace = FALSE, costfunc = 
         {
             if (trace)
             {
-                if (beta[k + 1, skip] != 0)
+                if (beta[k, skip] != 0)
                 {
                     cat("Should have been zero.  Was: ")
-                    cat(beta[k + 1, skip])
+                    cat(beta[k, skip])
                 }
             }
-            beta[k + 1, skip] <- 0
+            beta[k, skip] <- 0
         }
         if (trace)
         {
@@ -332,7 +329,7 @@ clars4 <- function(x, y, cost, maxk = 50, eps = 1e-6, trace = FALSE, costfunc = 
             ww <- rep(0, p)
             ww[Active] <- w
             trace.out$w <- ww
-            trace.out$beta <- beta[k + 1, ]
+            trace.out$beta <- beta[k, ]
             print(trace.out)
             cat("\n\n")
         }
@@ -343,5 +340,5 @@ clars4 <- function(x, y, cost, maxk = 50, eps = 1e-6, trace = FALSE, costfunc = 
     treeMatrix[ , treenum] <- c(tree, rep(0, maxk + 1 - length(tree)))
     maxdepth <- max(maxdepth, length(tree))
 
-    list(mu = mu[1:(k + 1), ], beta = beta[1:(k + 1), ], tree = treeMatrix[1:maxdepth, 1:treenum])
+    list(mu = mu[1:k, ], beta = beta[1:k, ], tree = treeMatrix[1:maxdepth, 1:treenum])
 }
