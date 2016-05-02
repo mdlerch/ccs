@@ -1,5 +1,5 @@
 # implement tiered levels of what gamma is allowed to be
-clars <- function(x, y, cost, maxk = 50, eps = 1e-6, trace = FALSE, costfunc = NULL)
+clars3 <- function(x, y, cost, maxk = 50, eps = 1e-6, trace = FALSE, costfunc = NULL)
 {
     # default costfunc is just sum of used variables
     if (is.null(costfunc))

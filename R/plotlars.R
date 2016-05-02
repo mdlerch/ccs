@@ -50,7 +50,7 @@ plotclars <- function(lars.object, cost)
     }
 }
 
-plotcanalyze <- function(obj, type = "full")
+plotcanalyze <- function(obj, type = "full", bonus = FALSE)
 {
     out <- paste(c("clars", "lars", "lass", "clar2"), "_", type, sep = "")
     xlims <- c(min(obj[[out[1]]]$modelcost, obj[[out[2]]]$modelcost,
@@ -66,9 +66,16 @@ plotcanalyze <- function(obj, type = "full")
          xlab = "Model Cost", ylab = "Score")
     points(obj[[out[2]]]$score ~ obj[[out[2]]]$modelcost, col = "red", pch = 16, cex = 3)
     points(obj[[out[3]]]$score ~ obj[[out[3]]]$modelcost, col = "purple", pch = 16, cex = 2)
-    points(obj[[out[4]]]$score ~ obj[[out[4]]]$modelcost, col = "green", pch = 16, cex = 1)
+    if (bonus)
+    {
+        points(obj[[out[4]]]$score ~ obj[[out[4]]]$modelcost, col = "green", pch = 16, cex = 1)
+    }
 
-    legend('topright', c("clars", "lars", "lasso", "clar2"), pch = 16, col = c("blue", "red", "purple", "green"))
-    # legend('topright', c("clars", "lars", "lasso", "clar2"), pch = 16, col = c("blue", "red", "purple", "green"))
+    if (!bonus)
+    {
+        legend('topright', c("clars", "lars", "lasso"), pch = 16, col = c("blue", "red", "purple"))
+    } else {
+        legend('topright', c("clars", "lars", "lasso", "clar2"), pch = 16, col = c("blue", "red", "purple", "green"))
+    }
 }
 
