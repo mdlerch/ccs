@@ -118,11 +118,11 @@ C - c_{j'} &= \gamma(A - x_{j'}'\gamma u) \\
 
 There is another solution, however, for the case that the correlation is in the opposite sign:
 
-$$ \gamma = \frac{C - c_{j'}}{A - x_{j'}'\gamma u} $$
+$$ \gamma = \frac{C + c_{j'}}{A + x_{j'}'\gamma u} $$
 
 So, we choose $\gamma$ to be
 
-$$\gamma = \min\left(\frac{C - c_{j'}}{A - x_{j'}'\gamma u},\frac{C - c_{j'}}{A - x_{j'}'\gamma u}\right)$$
+$$\gamma = \min\left(\frac{C - c_{j'}}{A - x_{j'}'\gamma u},\frac{C + c_{j'}}{A + x_{j'}'\gamma u}\right)$$
 
 
 
