@@ -52,7 +52,7 @@ plotcanalyze(out, "train")
 plotcanalyze(out, "test")
 
 ###########################################################################
-##                random cost different order of manitude                ##
+##                random cost different order of magnitude                ##
 ###########################################################################
 
 cost <- exp(runif(p, 1, 10))

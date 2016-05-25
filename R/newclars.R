@@ -9,56 +9,53 @@ clars <- function(x, y, cost, maxk = 50, eps = 1e-6, trace = FALSE, costfunc = N
             sum(cost[Active])
         }
     }
-    # variable setup
-    n <- nrow(x); p <- ncol(x)
 
+    # setup
+    n <- nrow(x); p <- ncol(x)
     if (missing(cost)) cost <- rep(1, p)
 
-    # sets
     Inactive <- rep(TRUE, p)
     Active <- rep(FALSE, p)
-
     activeMatrix <- matrix(FALSE, nrow = maxk + 1, ncol = p)
     skipMatrix <- matrix(FALSE, nrow = maxk + 1, ncol = p)
     treeMatrix <- matrix(0, nrow = maxk + 1, ncol = maxk + 1)
+    # how many trees have we had so far
     treenum <- 1
-    tree <- NULL
+    tree <- 1
+    # distance to OLS solution (set to 0 to initialize)
+    gmax <- 0
+    # how deep did the deepest tree go?  For outputting treeMatrix
     maxdepth <- 1
-
-    Gram <- t(x) %*% x
-
-    # number of steps
-    k <- 1
-    # number of variables currently in model
-    nv <- 0
-
+    # setup mu and beta matrix and current values
     mu <- matrix(0, nrow = maxk + 1, ncol = n)
     muC <- rep(0, n)
     beta <- matrix(0, nrow = maxk + 1, ncol = p)
     betaC <- rep(0, p)
+    # number of steps
+    k <- 1
+    # number of variables currently in model
+    nv <- 0
+    # pre-compute the gram matrix, makes things more efficient
+    Gram <- t(x) %*% x
 
-    # step 1
+    ### STEP 1
+    ##########
     x <- scale(x)
     y <- y - mean(y)
-    e <- y - muC
+    r <- y - muC
 
-    # step 2
-    cvec <- t(x) %*% e
+    ### STEP 2
+    ##########
+    cvec <- t(x) %*% r
     cmax <- max(abs(cvec))
     svec <- abs(cvec) / cost
     smax <- max(svec)
     j <- svec >= smax - eps
     Active <- j
     newj <- which(j)
-    r2 <- var(e)
-
-    tree <- 1
-
-    # distance to OLS solution (set to 0 to initialize)
-    gmax <- 0
+    r2 <- var(r) * (n - 1)
 
     trace.out <- data.frame(var = colnames(x), cost = cost)
-
     if (trace)
     {
         cat("\nIteration: ")
@@ -82,24 +79,19 @@ clars <- function(x, y, cost, maxk = 50, eps = 1e-6, trace = FALSE, costfunc = N
     }
 
     skip <- rep(FALSE, p)
-
     while (nv < p & k < maxk)
     {
 
-        cat("tree: ")
-        cat(tree)
-        cat("\n")
         k <- k + 1
         activeMatrix[k, ] <- Active
-
-        # step 3
-
         Inactive <- !Active
         nv <- sum(Active)
-        e <- y - muC
-        cvec <- t(x) %*% e
+        r <- y - muC
+        cvec <- t(x) %*% r
         cmax <- max(abs(cvec[Active]))
 
+        ### STEP 3
+        ##########
         Signs <- sign(cvec[Active])
         XA <- x[ , Active] * rep(1, n) %*% t(Signs)
         gA <- t(XA) %*% XA
@@ -107,11 +99,8 @@ clars <- function(x, y, cost, maxk = 50, eps = 1e-6, trace = FALSE, costfunc = N
         AA <- 1 / sqrt(one %*% solve(gA) %*% one)
         w <- AA %*% t(solve(gA) %*% one)
         u <- XA %*% t(w)
-
-
         a <- t(x) %*% u
-
-        ## to OLS solution
+        # to OLS solution
         gmax <- drop(cmax / AA)
 
         # cat("\n")
@@ -137,12 +126,10 @@ clars <- function(x, y, cost, maxk = 50, eps = 1e-6, trace = FALSE, costfunc = N
         # cat(skipMatrix[tree[1], ])
         # cat("\n")
 
-
         if (nv == p)
         {
             gamma <- gmax
         } else {
-
             # calculate each variables next price
             # TODO: can this be made more efficient?
             price <- rep(0, p)
@@ -158,15 +145,18 @@ clars <- function(x, y, cost, maxk = 50, eps = 1e-6, trace = FALSE, costfunc = N
             gamP[Inactive] <- (cmax - cvec[Inactive]) / (AA - a[Inactive])
             gamN[Inactive] <- (cmax + cvec[Inactive]) / (AA + a[Inactive])
 
+            # TODO: TODO: TODO:
+            # TODO: TODO: TODO:
+
             # First choice, gamma between 0 and cmax/A
             gamvec <- apply(cbind(gamP, gamN), 1, mingt0)
-            # TODO: how big can gamma be? can it be negative
+            # TODO: how big can gamma be? can it be negative?
             OK <- Inactive & (gamvec < 2 * gmax) &! skipMatrix[tree[1], ]
 
             if (any(OK))
             {
                 # step 4
-                theta <- acos(sum(u * e) / sqrt(r2))
+                theta <- acos(t(r) %*% u / sqrt(r2))
                 r2j <- r2 + gamvec^2 - 2 * sqrt(r2) * gamvec * cos(theta)
                 cvecP <- (cmax - gamvec * AA) * r2j
                 score <- abs((cvecP) / price)
@@ -321,7 +311,7 @@ clars <- function(x, y, cost, maxk = 50, eps = 1e-6, trace = FALSE, costfunc = N
             cat(gmax)
             cat("\n")
             cat("Current SS: ")
-            cat(var(e))
+            cat(var(r))
             cat("\n")
 
             trace.out$In <- ifelse(Inactive, "Out", "In")

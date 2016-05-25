@@ -26,7 +26,7 @@ canalyze <- function(x, y, cost, hold = 0.2, maxk = 500, eps = 1e-5)
     result$lass_full <- evalclars(lout, x, y, cost)
 
     cout <- clars(xtrain, ytrain, cost, maxk = maxk)
-    cou2 <- clars2(xtrain, ytrain, cost, maxk = maxk)
+    cou2 <- cls(xtrain, ytrain, cost, maxk = maxk)
     mout <- mlars(xtrain, ytrain, maxk = maxk)
     lout <- mlasso(xtrain, ytrain)
 
