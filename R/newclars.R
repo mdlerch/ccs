@@ -1,5 +1,5 @@
 # Try to add tree methodology
-clarsO <- function(x, y, cost, maxk = 50, eps = 1e-6, trace = FALSE, costfunc = NULL)
+clars <- function(x, y, cost, maxk = 50, eps = 1e-6, trace = FALSE, costfunc = NULL)
 {
     # default costfunc is just sum of used variables
     if (is.null(costfunc))
@@ -54,6 +54,7 @@ clarsO <- function(x, y, cost, maxk = 50, eps = 1e-6, trace = FALSE, costfunc = 
 
     tree <- 1
 
+    # distance to OLS solution (set to 0 to initialize)
     gmax <- 0
 
     trace.out <- data.frame(var = colnames(x), cost = cost)
