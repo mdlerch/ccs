@@ -9,7 +9,6 @@ clarsO <- function(x, y, cost, maxk = 50, eps = 1e-6, trace = FALSE, costfunc = 
             sum(cost[Active])
         }
     }
-    x <- scale(x)
     # variable setup
     n <- nrow(x); p <- ncol(x)
 
@@ -38,7 +37,9 @@ clarsO <- function(x, y, cost, maxk = 50, eps = 1e-6, trace = FALSE, costfunc = 
     beta <- matrix(0, nrow = maxk + 1, ncol = p)
     betaC <- rep(0, p)
 
-    # Equation 2.8
+    # step 1
+    x <- scale(x)
+    y <- y - mean(y)
     e <- y - muC
     cvec <- t(x) %*% e
     cmax <- max(abs(cvec))
@@ -87,14 +88,12 @@ clarsO <- function(x, y, cost, maxk = 50, eps = 1e-6, trace = FALSE, costfunc = 
         k <- k + 1
         activeMatrix[k, ] <- Active
 
-        # 1. We have a new variable entering. Update residuals
         Inactive <- !Active
         nv <- sum(Active)
         e <- y - muC
         cvec <- t(x) %*% e
         cmax <- max(abs(cvec[Active]))
 
-        # 2. Find unit-vector of equal projection.
         Signs <- sign(cvec[Active])
         XA <- x[ , Active] * rep(1, n) %*% t(Signs)
         gA <- t(XA) %*% XA
@@ -103,7 +102,6 @@ clarsO <- function(x, y, cost, maxk = 50, eps = 1e-6, trace = FALSE, costfunc = 
         w <- AA %*% t(solve(gA) %*% one)
         u <- XA %*% t(w)
 
-        # 3. Increment model fit in the direction of u.
 
         a <- t(x) %*% u
 
