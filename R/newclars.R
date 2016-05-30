@@ -210,7 +210,10 @@ clars <- function(x, y, cost, maxk = 50, eps = 1e-6, trace = FALSE, costfunc = N
         # find gamma tilde for each j
         gammaj <- rep(0, p)
         # TODO: should this be betaC?
-        gammaj[Active] <- -beta[k, Active] / (w * Signs)
+        gammaj[Active] <- -betaC[Active] / (w * Signs)
+        cat("\n")
+        cat(gammaj)
+        cat("\n")
         # If there are any gammaj that will eventually cross
         flag.cross <- FALSE
         # TODO: gamma.tilde could also be negative if we choose a negative
