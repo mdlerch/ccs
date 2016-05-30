@@ -167,6 +167,9 @@ clars <- function(x, y, cost, maxk = 50, eps = 1e-6, trace = FALSE, costfunc = N
                 tree <- c(k, tree)
             } else {
                 # complete the ols
+                cat("\n")
+                cat("Reverting the tree")
+                cat("\n")
                 gamma <- gmax
                 muC <- muC + drop(gamma) * u
                 betaC[Active] <- betaC[Active] + drop(gamma) * w * Signs
