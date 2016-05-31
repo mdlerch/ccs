@@ -30,7 +30,6 @@ set.seed(95)
 cost <- rep(1, p)
 
 clarsP <- clars(xtrain, ytrain, cost, maxk = 50, trace = FALSE)
-mlasso(xtrain ,ytrain)
 larsP <- lars(xtrain, ytrain, type = "lar")
 lassP <- lars(xtrain, ytrain, type = "lasso")
 
@@ -48,6 +47,23 @@ plot(clarsP.eval$score ~ clarsP.eval$modelcost, type = "p", xlim = xlim, ylim = 
 
 points(larsP.eval$score ~ larsP.eval$modelcost, col = "red", pch = 16, cex = 3)
 points(lassP.eval$score ~ lassP.eval$modelcost, col = "purple", pch = 16, cex = 2)
+
+legend('topright', c("clars", "lars", "lasso"), pch = 16, col = c("blue", "red", "purple"))
+
+clarsT.eval <- evalclars(clarsP, xtest, ytest, cost)
+larsT.eval <- evalclars(list(beta = larsP$beta), xtest, ytest, cost)
+lassT.eval <- evalclars(list(beta = lassP$beta), xtest, ytest, cost)
+
+xlim <- c(min(clarsT.eval$modelcost, larsT.eval$modelcost, lassT.eval$modelcost),
+          max(clarsT.eval$modelcost, larsT.eval$modelcost, lassT.eval$modelcost))
+ylim <- c(min(clarsT.eval$score, larsT.eval$score, lassT.eval$score),
+          max(clarsT.eval$score, larsT.eval$score, lassT.eval$score))
+
+plot(clarsT.eval$score ~ clarsT.eval$modelcost, type = "p", xlim = xlim, ylim = ylim,
+     col = "blue", pch = 16, cex = 4, xlab = "Model Cost", ylab = "Score")
+
+points(larsT.eval$score ~ larsT.eval$modelcost, col = "red", pch = 16, cex = 3)
+points(lassT.eval$score ~ lassT.eval$modelcost, col = "purple", pch = 16, cex = 2)
 
 legend('topright', c("clars", "lars", "lasso"), pch = 16, col = c("blue", "red", "purple"))
 
@@ -76,6 +92,24 @@ plot(clarsP.eval$score ~ clarsP.eval$modelcost, type = "p", xlim = xlim, ylim = 
 
 points(larsP.eval$score ~ larsP.eval$modelcost, col = "red", pch = 16, cex = 3)
 points(lassP.eval$score ~ lassP.eval$modelcost, col = "purple", pch = 16, cex = 2)
+
+legend('topright', c("clars", "lars", "lasso"), pch = 16, col = c("blue", "red", "purple"))
+
+
+clarsT.eval <- evalclars(clarsP, xtest, ytest, cost)
+larsT.eval <- evalclars(list(beta = larsP$beta), xtest, ytest, cost)
+lassT.eval <- evalclars(list(beta = lassP$beta), xtest, ytest, cost)
+
+xlim <- c(min(clarsT.eval$modelcost, larsT.eval$modelcost, lassT.eval$modelcost),
+          max(clarsT.eval$modelcost, larsT.eval$modelcost, lassT.eval$modelcost))
+ylim <- c(min(clarsT.eval$score, larsT.eval$score, lassT.eval$score),
+          max(clarsT.eval$score, larsT.eval$score, lassT.eval$score))
+
+plot(clarsT.eval$score ~ clarsT.eval$modelcost, type = "p", xlim = xlim, ylim = ylim,
+     col = "blue", pch = 16, cex = 4, xlab = "Model Cost", ylab = "Score")
+
+points(larsT.eval$score ~ larsT.eval$modelcost, col = "red", pch = 16, cex = 3)
+points(lassT.eval$score ~ lassT.eval$modelcost, col = "purple", pch = 16, cex = 2)
 
 legend('topright', c("clars", "lars", "lasso"), pch = 16, col = c("blue", "red", "purple"))
 
@@ -108,6 +142,23 @@ points(lassP.eval$score ~ lassP.eval$modelcost, col = "purple", pch = 16, cex = 
 legend('topright', c("clars", "lars", "lasso"), pch = 16, col = c("blue", "red", "purple"))
 
 
+clarsT.eval <- evalclars(clarsP, xtest, ytest, cost)
+larsT.eval <- evalclars(list(beta = larsP$beta), xtest, ytest, cost)
+lassT.eval <- evalclars(list(beta = lassP$beta), xtest, ytest, cost)
+
+xlim <- c(min(clarsT.eval$modelcost, larsT.eval$modelcost, lassT.eval$modelcost),
+          max(clarsT.eval$modelcost, larsT.eval$modelcost, lassT.eval$modelcost))
+ylim <- c(min(clarsT.eval$score, larsT.eval$score, lassT.eval$score),
+          max(clarsT.eval$score, larsT.eval$score, lassT.eval$score))
+
+plot(clarsT.eval$score ~ clarsT.eval$modelcost, type = "p", xlim = xlim, ylim = ylim,
+     col = "blue", pch = 16, cex = 4, xlab = "Model Cost", ylab = "Score")
+
+points(larsT.eval$score ~ larsT.eval$modelcost, col = "red", pch = 16, cex = 3)
+points(lassT.eval$score ~ lassT.eval$modelcost, col = "purple", pch = 16, cex = 2)
+
+legend('topright', c("clars", "lars", "lasso"), pch = 16, col = c("blue", "red", "purple"))
+
 ###########################################################################
 ##                best cost more (best = largest ols coef                ##
 ###########################################################################
@@ -116,7 +167,6 @@ set.seed(95)
 cost <- sort(runif(p, 1, 10))[best]
 
 clarsP <- clars(xtrain, ytrain, cost, maxk = 50, trace = FALSE)
-mlasso(xtrain ,ytrain)
 larsP <- lars(xtrain, ytrain, type = "lar")
 lassP <- lars(xtrain, ytrain, type = "lasso")
 
@@ -134,6 +184,24 @@ plot(clarsP.eval$score ~ clarsP.eval$modelcost, type = "p", xlim = xlim, ylim = 
 
 points(larsP.eval$score ~ larsP.eval$modelcost, col = "red", pch = 16, cex = 3)
 points(lassP.eval$score ~ lassP.eval$modelcost, col = "purple", pch = 16, cex = 2)
+
+legend('topright', c("clars", "lars", "lasso"), pch = 16, col = c("blue", "red", "purple"))
+
+
+clarsT.eval <- evalclars(clarsP, xtest, ytest, cost)
+larsT.eval <- evalclars(list(beta = larsP$beta), xtest, ytest, cost)
+lassT.eval <- evalclars(list(beta = lassP$beta), xtest, ytest, cost)
+
+xlim <- c(min(clarsT.eval$modelcost, larsT.eval$modelcost, lassT.eval$modelcost),
+          max(clarsT.eval$modelcost, larsT.eval$modelcost, lassT.eval$modelcost))
+ylim <- c(min(clarsT.eval$score, larsT.eval$score, lassT.eval$score),
+          max(clarsT.eval$score, larsT.eval$score, lassT.eval$score))
+
+plot(clarsT.eval$score ~ clarsT.eval$modelcost, type = "p", xlim = xlim, ylim = ylim,
+     col = "blue", pch = 16, cex = 4, xlab = "Model Cost", ylab = "Score")
+
+points(larsT.eval$score ~ larsT.eval$modelcost, col = "red", pch = 16, cex = 3)
+points(lassT.eval$score ~ lassT.eval$modelcost, col = "purple", pch = 16, cex = 2)
 
 legend('topright', c("clars", "lars", "lasso"), pch = 16, col = c("blue", "red", "purple"))
 
@@ -163,5 +231,23 @@ plot(clarsP.eval$score ~ clarsP.eval$modelcost, type = "p", xlim = xlim, ylim = 
 
 points(larsP.eval$score ~ larsP.eval$modelcost, col = "red", pch = 16, cex = 3)
 points(lassP.eval$score ~ lassP.eval$modelcost, col = "purple", pch = 16, cex = 2)
+
+legend('topright', c("clars", "lars", "lasso"), pch = 16, col = c("blue", "red", "purple"))
+
+
+clarsT.eval <- evalclars(clarsP, xtest, ytest, cost)
+larsT.eval <- evalclars(list(beta = larsP$beta), xtest, ytest, cost)
+lassT.eval <- evalclars(list(beta = lassP$beta), xtest, ytest, cost)
+
+xlim <- c(min(clarsT.eval$modelcost, larsT.eval$modelcost, lassT.eval$modelcost),
+          max(clarsT.eval$modelcost, larsT.eval$modelcost, lassT.eval$modelcost))
+ylim <- c(min(clarsT.eval$score, larsT.eval$score, lassT.eval$score),
+          max(clarsT.eval$score, larsT.eval$score, lassT.eval$score))
+
+plot(clarsT.eval$score ~ clarsT.eval$modelcost, type = "p", xlim = xlim, ylim = ylim,
+     col = "blue", pch = 16, cex = 4, xlab = "Model Cost", ylab = "Score")
+
+points(larsT.eval$score ~ larsT.eval$modelcost, col = "red", pch = 16, cex = 3)
+points(lassT.eval$score ~ lassT.eval$modelcost, col = "purple", pch = 16, cex = 2)
 
 legend('topright', c("clars", "lars", "lasso"), pch = 16, col = c("blue", "red", "purple"))
