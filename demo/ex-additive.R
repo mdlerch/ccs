@@ -117,7 +117,7 @@ legend('topright', c("clars", "lars", "lasso"), pch = 16, col = c("blue", "red",
 ##                random cost different order of magnitude                ##
 ###########################################################################
 
-set.seed(95)
+set.seed(93)
 cost <- exp(runif(p, 1, 10))
 
 clarsP <- clars(xtrain, ytrain, cost, maxk = 50, trace = TRUE)
