@@ -146,6 +146,9 @@ clars <- function(x, y, cost, maxk = 50, eps = 1e-6, trace = FALSE, costfunc = N
 
             # TODO: TODO: TODO:
             # TODO: TODO: TODO:
+            # SOMETHING SEEMS WRONG WITH SCORE
+            # ALGORITHM IS ALLOWING gamvec > gmax to have greater preference
+            # than gamvec < gmax
 
             # First choice, gamma between 0 and cmax/A
             gamvec <- apply(cbind(gamP, gamN), 1, mingt0)
