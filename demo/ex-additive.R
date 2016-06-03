@@ -29,7 +29,7 @@ ytest <- y[test]
 set.seed(95)
 cost <- rep(1, p)
 
-clarsP <- clars(xtrain, ytrain, cost, maxk = 50, trace = FALSE)
+clarsP <- clars(xtrain, ytrain, cost, maxk = 50, trace = TRUE)
 larsP <- lars(xtrain, ytrain, type = "lar")
 lassP <- lars(xtrain, ytrain, type = "lasso")
 

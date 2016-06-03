@@ -17,7 +17,7 @@ clars <- function(x, y, cost, maxk = 50, eps = 1e-6, trace = FALSE, costfunc = N
     Active <- rep(FALSE, p)
     activeMatrix <- matrix(FALSE, nrow = maxk + 1, ncol = p)
     skipMatrix <- matrix(FALSE, nrow = maxk + 1, ncol = p)
-    treeMatrix <- matrix(0, nrow = maxk + 1, ncol = maxk + 1)
+    treeMatrix <- NULL
     # how many trees have we had so far
     treenum <- 1
     tree <- 1
@@ -102,29 +102,6 @@ clars <- function(x, y, cost, maxk = 50, eps = 1e-6, trace = FALSE, costfunc = N
         # to OLS solution
         gmax <- drop(cmax / AA)
 
-        # cat("\n")
-        # cat("Iteration: ")
-        # cat(k - 1)
-        # cat("\n")
-        # cat("Tree: ")
-        # cat(tree)
-        # cat("\n")
-        # cat("activeMatrix: ")
-        # cat(activeMatrix[tree[1], ])
-        # cat("\n")
-        # cat("activeMatrix: ")
-        # cat(activeMatrix[tree[2], ])
-        # cat("\n")
-        # cat("beta: ")
-        # cat(betaC)
-        # cat("\n")
-        # cat("gmax: ")
-        # cat(gmax)
-        # cat("\n")
-        # cat("Skips: ")
-        # cat(skipMatrix[tree[1], ])
-        # cat("\n")
-
         if (nv == p)
         {
             gamma <- gmax
@@ -152,15 +129,15 @@ clars <- function(x, y, cost, maxk = 50, eps = 1e-6, trace = FALSE, costfunc = N
 
             # First choice, gamma between 0 and cmax/A
             gamvec <- apply(cbind(gamP, gamN), 1, mingt0)
-            # TODO: how big can gamma be? can it be negative?
-            OK <- Inactive & (gamvec < 2 * gmax) &! skipMatrix[tree[1], ]
+
+            OK <- Inactive & (gamvec < 2 * gmax) &! skipMatrix[tree[1], ] &! (gamvec == 0)
 
             if (any(OK))
             {
                 # step 4
                 theta <- acos(t(r) %*% u / sqrt(r2))
                 r2j <- r2 + gamvec^2 - 2 * sqrt(r2) * gamvec * cos(theta)
-                cvecP <- (cmax - gamvec * AA) * r2j
+                cvecP <- (cmax - gamvec * AA) * sqrt(r2j)
                 score <- abs((cvecP) / price)
                 # TODO: this includes all "acceptable"
                 best <- max(abs(score[OK]))
@@ -178,10 +155,9 @@ clars <- function(x, y, cost, maxk = 50, eps = 1e-6, trace = FALSE, costfunc = N
                 betaC[Active] <- betaC[Active] + drop(gamma) * w * Signs
                 mu[k, ] <- muC
                 beta[k, ] <- betaC
-                Active[newj] <- TRUE
                 activeMatrix[k, ] <- Active
 
-                treeMatrix[ , treenum] <- c(tree, rep(0, maxk + 1 - length(tree)))
+                treeMatrix <- rbind(c(tree, rep(0, maxk + 1 - length(tree))), treeMatrix)
                 treenum <- treenum + 1
                 maxdepth <- max(maxdepth, length(tree))
 
@@ -195,6 +171,13 @@ clars <- function(x, y, cost, maxk = 50, eps = 1e-6, trace = FALSE, costfunc = N
                     Active <- rep(FALSE, p)
                 } else {
                     toskip <- which(activeMatrix[tree[1], ] &! activeMatrix[tree[2], ])
+                    cat(k)
+                    cat("\n")
+                    cat(tree[1])
+                    cat(" Active Matrix: ")
+                    cat("\n")
+                    print(activeMatrix[1:k, 1:p])
+
                     skipMatrix[tree[2], toskip] <- TRUE
                     betaC <- beta[tree[2], ]
                     muC <- mu[tree[2], ]
@@ -202,6 +185,10 @@ clars <- function(x, y, cost, maxk = 50, eps = 1e-6, trace = FALSE, costfunc = N
                     tree <- tree[-1]
                     newj <- NA
                 }
+
+                cat("\n")
+                print(treeMatrix[ , 1:maxdepth])
+                cat("\n")
 
                 # TODO: do i need this?
                 next
@@ -292,6 +279,8 @@ clars <- function(x, y, cost, maxk = 50, eps = 1e-6, trace = FALSE, costfunc = N
         {
             cat("\nIteration: ")
             cat(k)
+            cat("\nTree history: ")
+            cat(tree)
             cat("\nCurrent number of variables: ")
             cat(nv)
             # if (flag.contender)
@@ -339,8 +328,9 @@ clars <- function(x, y, cost, maxk = 50, eps = 1e-6, trace = FALSE, costfunc = N
         activeMatrix[k, ] <- Active
     }
 
-    treeMatrix[ , treenum] <- c(tree, rep(0, maxk + 1 - length(tree)))
+    treeMatrix <- rbind(c(tree, rep(0, maxk + 1 - length(tree))), treeMatrix)
     maxdepth <- max(maxdepth, length(tree))
 
-    list(mu = mu[1:k, ], beta = beta[1:k, ], tree = treeMatrix[1:maxdepth, 1:treenum])
+    list(mu = mu[1:k, ], beta = beta[1:k, ], tree = treeMatrix[, 1:maxdepth],
+         activeMatrix = activeMatrix[1:k, ])
 }
