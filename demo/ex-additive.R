@@ -74,7 +74,7 @@ legend('topright', c("clars", "lars", "lasso"), pch = 16, col = c("blue", "red",
 set.seed(95)
 cost <- runif(p, 1, 10)
 
-clarsP <- clars(xtrain, ytrain, cost, maxk = 50, trace = FALSE)
+clarsP <- clarstree(xtrain, ytrain, cost, maxk = 50, trace = FALSE)
 larsP <- lars(xtrain, ytrain, type = "lar")
 lassP <- lars(xtrain, ytrain, type = "lasso")
 
