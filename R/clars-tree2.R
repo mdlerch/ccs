@@ -17,12 +17,13 @@ clarstree <- function(x, y, cost, maxk = 50, eps = 1e-6, trace = FALSE, costfunc
     Active <- rep(FALSE, p)
     activeMatrix <- matrix(FALSE, nrow = maxk + 1, ncol = p)
     skipMatrix <- matrix(FALSE, nrow = maxk + 1, ncol = p)
-    treeMatrix <- NULL
     # how many trees have we had so far
-    treenum <- 1
-    tree <- 1
-    newtree <- NULL
+    newtree <- 0
+    newtreenum <- 0
     newtreestart <- FALSE
+    newskipMatrix <- matrix(FALSE, nrow = maxk + 1, ncol = p)
+    newtreeMatrix <- matrix(FALSE, nrow = maxk + 1, ncol = p)
+
     # distance to OLS solution (set to 0 to initialize)
     gmax <- 0
     # how deep did the deepest tree go?  For outputting treeMatrix
@@ -52,9 +53,21 @@ clarstree <- function(x, y, cost, maxk = 50, eps = 1e-6, trace = FALSE, costfunc
     svec <- abs(cvec) / cost
     smax <- max(svec)
     j <- svec >= smax - eps
+    larsj <- cvec == cmax
     Active <- j
     newj <- which(j)
     r2 <- var(r) * (n - 1)
+
+    if (which(larsj) != which(j))
+    {
+        cat("Not a lars selection\n")
+        newtree <- 1
+        newtreestart <- TRUE
+        newtreenum <- 1
+        newskipMatrix[newtreenum, j] <- TRUE
+    } else {
+        cat("clars == lars\n")
+    }
 
     trace.out <- data.frame(var = colnames(x), cost = cost)
     if (trace)
@@ -136,7 +149,12 @@ clarstree <- function(x, y, cost, maxk = 50, eps = 1e-6, trace = FALSE, costfunc
             # First choice, gamma between 0 and cmax/A
             gamvec <- apply(cbind(gamP, gamN), 1, mingt0)
 
-            OK <- Inactive & (gamvec < 2 * gmax) &! skipMatrix[tree[1], ] &! (gamvec == 0)
+            if (newtreestart)
+            {
+                OK <- Inactive & (gamvec < gmax) &! newskipMatrix[newtreenum, ] &! (gamvec == 0)
+            } else {
+                OK <- Inactive & (gamvec < gmax) &! (gamvec == 0)
+            }
 
             if (any(OK))
             {
@@ -150,28 +168,33 @@ clarstree <- function(x, y, cost, maxk = 50, eps = 1e-6, trace = FALSE, costfunc
                 newj <- which(best == score)
                 gamma <- gamvec[newj]
 
+                newtreestart <- FALSE
                 # let me know if I'm not making the lars pick
                 if (gamma != larsgamm)
                 {
-                    # 1. Is this the first attempt at an old tree node?
-                    # Yes
-                    #   2. Add another j to list of non-available j's
-                    #   3. Continue
-                    # No
-                    #   2. Create a new tree node
-                    #   3. Add this variable to be only (so far) non-available j
-                    #   3. Flag that this is a newtreenode step
-                    newtree <- c(k, newtree)
-                } else {
-                    # this was not a tree node creation step
-                    newtreestart <- FALSE
+                    cat("Not a lars selection")
+                    if (newtree == 0)
+                    {
+                        cat(".  Starting a new tree at ")
+                        cat(k)
+                        cat(".\n")
+                        newtree <- k
+                        newtreestart <- TRUE
+                    } else {
+                        cat(", but already in a tree.\n")
+                    }
                 }
-                # actual updates later in code
-                tree <- c(k, tree)
             } else {
+                # need to revert the tree.
+
+                if (newtreestart == TRUE)
+                {
+                    cat("Major problems\n")
+                }
+
                 # complete the ols
                 cat("\n")
-                cat("Reverting the tree")
+                cat("Completing the OLS")
                 cat("\n")
                 gamma <- gmax
                 muC <- muC + drop(gamma) * u
@@ -180,38 +203,66 @@ clarstree <- function(x, y, cost, maxk = 50, eps = 1e-6, trace = FALSE, costfunc
                 beta[k, ] <- betaC
                 activeMatrix[k, ] <- Active
 
-                treeMatrix <- rbind(c(tree, rep(0, maxk + 1 - length(tree))), treeMatrix)
-                treenum <- treenum + 1
-                maxdepth <- max(maxdepth, length(tree))
-
                 # revert
-                if (length(tree) == 1)
+                cat("\n")
+                cat("Reverting the tree")
+                cat("\n")
+                print(newskipMatrix[newtreenum, ])
+
+                if (newtree == 1)
                 {
-                    # TODO: might need to set up a skipMatrix for tree == 0
-                    skipper <- which(activeMatrix[tree[1], ])
-                    betaC <- rep(0, p)
-                    muC <- rep(0, n)
-                    Active <- rep(FALSE, p)
-                } else {
-                    toskip <- which(activeMatrix[tree[1], ] &! activeMatrix[tree[2], ])
-                    cat(k)
-                    cat("\n")
-                    cat(tree[1])
-                    cat(" Active Matrix: ")
-                    cat("\n")
-                    print(activeMatrix[1:k, 1:p])
+                    # if we go back to step 1
+                    cat("Back to the start.\n")
+                    betaC <- beta[newtree, ]
+                    muC <- mu[newtree, ]
+                    Active <- activeMatrix[newtree, ]
+                    # repeat steps 1 and 2
+                    ### STEP 1
+                    ##########
+                    r <- y - muC
 
-                    skipMatrix[tree[2], toskip] <- TRUE
-                    betaC <- beta[tree[2], ]
-                    muC <- mu[tree[2], ]
-                    Active <- activeMatrix[tree[2], ]
-                    tree <- tree[-1]
-                    newj <- NA
+                    ### STEP 2
+                    ##########
+                    cvec <- t(x) %*% r
+                    cmax <- max(abs(cvec))
+                    svec <- abs(cvec) / cost
+                    smax <- max(svec[!newskipMatrix[newtreenum, ]])
+                    j <- svec == smax
+                    larsj <- cvec == cmax
+                    Active <- j
+                    newj <- which(j)
+                    r2 <- var(r) * (n - 1)
+
+                    cat("LARS selection: ")
+                    cat(which(larsj))
+                    cat("\nclars selection: ")
+                    cat(which(j))
+                    cat("\n")
+
+                    if (which(larsj) != which(j))
+                    {
+                        cat("Not a lars selection\n")
+                        newtreenum <- newtreenum + 1
+                        newskipMatrix[newtreenum, j] <- TRUE
+                        cat("No longer allowed at this node: ")
+                        newtreestart <- TRUE
+                    } else {
+                        cat("clars == lars\n")
+                        # we do start with a lars step
+                        newtree <- 0
+                        newtreestart <- FALSE
+                    }
+
+                } else if (newtree != 0) {
+                    cat("Back to step ")
+                    cat(newtree)
+                    cat(".\n")
+                    betaC <- beta[newtree - 1, ]
+                    muC <- mu[newtree - 1, ]
+                    Active <- activeMatrix[newtree - 1, ]
+                    # TODOTODO might need to actually go back to k - 1
+                    newtreestart <- TRUE
                 }
-
-                cat("\n")
-                print(treeMatrix[ , 1:maxdepth])
-                cat("\n")
 
                 # TODO: do i need this?
                 next
@@ -302,8 +353,10 @@ clarstree <- function(x, y, cost, maxk = 50, eps = 1e-6, trace = FALSE, costfunc
         {
             cat("\nIteration: ")
             cat(k)
-            cat("\nTree history: ")
-            cat(tree)
+            cat("\nLARS eq: ")
+            cat(newtree == 0)
+            cat("\nAt a node: ")
+            cat(newtreestart)
             cat("\nCurrent number of variables: ")
             cat(nv)
             # if (flag.contender)
@@ -351,9 +404,6 @@ clarstree <- function(x, y, cost, maxk = 50, eps = 1e-6, trace = FALSE, costfunc
         activeMatrix[k, ] <- Active
     }
 
-    treeMatrix <- rbind(c(tree, rep(0, maxk + 1 - length(tree))), treeMatrix)
-    maxdepth <- max(maxdepth, length(tree))
-
-    list(mu = mu[1:k, ], beta = beta[1:k, ], tree = treeMatrix[, 1:maxdepth],
+    list(mu = mu[1:k, ], beta = beta[1:k, ],
          activeMatrix = activeMatrix[1:k, ])
 }
