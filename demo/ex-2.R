@@ -21,55 +21,6 @@ ytrain <- ytrain - mean(ytrain)
 xtest <- x[test, ]
 ytest <- y[test]
 
-
-###########################################################################
-##                  random cost same order of magnitude                  ##
-###########################################################################
-
-set.seed(95)
-cost <- runif(p, 1, 10)
-
-clarsP <- clarstree(xtrain, ytrain, cost, maxk = 50, trace = TRUE)
-larsP <- lars(xtrain, ytrain, type = "lar")
-lassP <- lars(xtrain, ytrain, type = "lasso")
-
-mlassP <- clarstree(xtrain, ytrain, rep(1, p), maxk = 40, trace = TRUE)
-
-clarsP.eval <- evalclars(clarsP, xtrain, ytrain, cost)
-larsP.eval <- evalclars(list(beta = larsP$beta), xtrain, ytrain, cost)
-lassP.eval <- evalclars(list(beta = lassP$beta), xtrain, ytrain, cost)
-
-xlim <- c(min(clarsP.eval$modelcost, larsP.eval$modelcost, lassP.eval$modelcost),
-          max(clarsP.eval$modelcost, larsP.eval$modelcost, lassP.eval$modelcost))
-ylim <- c(min(clarsP.eval$score, larsP.eval$score, lassP.eval$score),
-          max(clarsP.eval$score, larsP.eval$score, lassP.eval$score))
-
-plot(clarsP.eval$score ~ clarsP.eval$modelcost, type = "p", xlim = xlim, ylim = ylim,
-     col = "blue", pch = 16, cex = 4, xlab = "Model Cost", ylab = "Score")
-
-points(larsP.eval$score ~ larsP.eval$modelcost, col = "red", pch = 16, cex = 3)
-points(lassP.eval$score ~ lassP.eval$modelcost, col = "purple", pch = 16, cex = 2)
-
-legend('topright', c("clars", "lars", "lasso"), pch = 16, col = c("blue", "red", "purple"))
-
-
-clarsT.eval <- evalclars(clarsP, xtest, ytest, cost)
-larsT.eval <- evalclars(list(beta = larsP$beta), xtest, ytest, cost)
-lassT.eval <- evalclars(list(beta = lassP$beta), xtest, ytest, cost)
-
-xlim <- c(min(clarsT.eval$modelcost, larsT.eval$modelcost, lassT.eval$modelcost),
-          max(clarsT.eval$modelcost, larsT.eval$modelcost, lassT.eval$modelcost))
-ylim <- c(min(clarsT.eval$score, larsT.eval$score, lassT.eval$score),
-          max(clarsT.eval$score, larsT.eval$score, lassT.eval$score))
-
-plot(clarsT.eval$score ~ clarsT.eval$modelcost, type = "p", xlim = xlim, ylim = ylim,
-     col = "blue", pch = 16, cex = 4, xlab = "Model Cost", ylab = "Score")
-
-points(larsT.eval$score ~ larsT.eval$modelcost, col = "red", pch = 16, cex = 3)
-points(lassT.eval$score ~ lassT.eval$modelcost, col = "purple", pch = 16, cex = 2)
-
-legend('topright', c("clars", "lars", "lasso"), pch = 16, col = c("blue", "red", "purple"))
-
 ###########################################################################
 ##                random cost different order of magnitude                ##
 ###########################################################################
@@ -77,9 +28,20 @@ legend('topright', c("clars", "lars", "lasso"), pch = 16, col = c("blue", "red",
 set.seed(93)
 cost <- exp(runif(p, 1, 10))
 
-clarsP <- clars(xtrain, ytrain, cost, maxk = 50, trace = TRUE)
+clarsP <- clarstree(xtrain, ytrain, cost, maxk = 100, trace = TRUE)
 larsP <- lars(xtrain, ytrain, type = "lar")
 lassP <- lars(xtrain, ytrain, type = "lasso")
+
+# clarsP <- clarstree(xtrain, ytrain, rep(1, p), maxk = 10, trace = TRUE)
+
+# clarsP <- clarstree(xx, yy, cost[c(5, 7)], maxk = 50, trace = TRUE)
+
+# yy <- ytrain - xtrain %*% clarsP$beta[50, ]
+# xx <- xtrain[ , c(5, 7)]
+
+
+
+# mlarsP <- clarstree(xtrain, ytrain, rep(1, p), maxk = 30, trace = FALSE)
 
 clarsP.eval <- evalclars(clarsP, xtrain, ytrain, cost)
 larsP.eval <- evalclars(list(beta = larsP$beta), xtrain, ytrain, cost)
