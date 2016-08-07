@@ -17,8 +17,8 @@ clarstree <- function(x, y, cost, maxk = 50, eps = 1e-6, trace = FALSE, costfunc
     Active <- rep(FALSE, p)
     activeMatrix <- matrix(FALSE, nrow = maxk + 1, ncol = p)
     skipMatrix <- matrix(FALSE, nrow = maxk + 1, ncol = p)
-    # how many trees have we had so far
     newtree <- 0
+    # how many trees have we had so far
     newtreenum <- 0
     newtreestart <- FALSE
     newskipMatrix <- matrix(FALSE, nrow = maxk + 1, ncol = p)
@@ -62,7 +62,7 @@ clarstree <- function(x, y, cost, maxk = 50, eps = 1e-6, trace = FALSE, costfunc
     {
         cat("Not a lars selection\n")
         newtree <- 1
-        newtreestart <- TRUE
+        # newtreestart <- TRUE
         newtreenum <- 1
         newskipMatrix[newtreenum, j] <- TRUE
     } else {
@@ -101,9 +101,17 @@ clarstree <- function(x, y, cost, maxk = 50, eps = 1e-6, trace = FALSE, costfunc
         Inactive <- !Active
         nv <- sum(Active)
         r <- y - muC
+        print(betaC)
         cvec <- t(x) %*% r
         cmax <- max(abs(cvec[Active]))
 
+        # cat("Active\n")
+        # print(Active)
+        # print(activeMatrix)
+        # cat("beta\n")
+        # print(beta)
+
+        # cat("B\n")
         ### STEP 3
         ##########
         Signs <- sign(cvec[Active])
@@ -146,9 +154,25 @@ clarstree <- function(x, y, cost, maxk = 50, eps = 1e-6, trace = FALSE, costfunc
             # ALGORITHM IS ALLOWING gamvec > gmax to have greater preference
             # than gamvec < gmax
 
+            larsgamm <- min(temp[temp > eps], cmax / AA)
             # First choice, gamma between 0 and cmax/A
             gamvec <- apply(cbind(gamP, gamN), 1, mingt0)
 
+
+            larsj <- which(larsgamm == gamvec)
+            cat("lars choice: ")
+            cat(larsj)
+            cat("\n")
+            # cat("newtreestart\n")
+            # print(newtreestart)
+            # cat("Inactive\n")
+            # print(Inactive)
+            # cat("gamvec < gmax\n")
+            # print(gamvec < gmax)
+            # cat("newskipMatrix[newtreenum, ]\n")
+            # print(newskipMatrix[newtreenum, ])
+            # cat("gamvec\n")
+            # print(gamvec)
             if (newtreestart)
             {
                 OK <- Inactive & (gamvec < gmax) &! newskipMatrix[newtreenum, ] &! (gamvec == 0)
@@ -168,20 +192,40 @@ clarstree <- function(x, y, cost, maxk = 50, eps = 1e-6, trace = FALSE, costfunc
                 newj <- which(best == score)
                 gamma <- gamvec[newj]
 
-                newtreestart <- FALSE
                 # let me know if I'm not making the lars pick
                 if (gamma != larsgamm)
                 {
-                    cat("Not a lars selection")
+                    cat("Not a lars selection.\n")
+                    if (newtreestart)
+                    {
+                        newskipMatrix[newtreenum, newj] <- TRUE
+                        cat("Updating skips to\n")
+                        print(newskipMatrix[newtreenum, ])
+                        newtreestart <- FALSE
+                    }
                     if (newtree == 0)
                     {
-                        cat(".  Starting a new tree at ")
+                        cat("Starting a new tree at ")
                         cat(k)
                         cat(".\n")
                         newtree <- k
+                        newtreenum <- newtreenum + 1
+                        newskipMatrix[newtreenum, newj] <- TRUE
+
+                        cat("Removing from options: ")
+                        cat(newj)
+                        cat("\n")
                         newtreestart <- TRUE
                     } else {
                         cat(", but already in a tree.\n")
+                        newtreestart <- FALSE
+                    }
+                } else {
+                    if (newtreestart)
+                    {
+                        cat("Now aligned with lars\n")
+                        newtree <- 0
+                        newtreestart <- FALSE
                     }
                 }
             } else {
@@ -189,10 +233,11 @@ clarstree <- function(x, y, cost, maxk = 50, eps = 1e-6, trace = FALSE, costfunc
 
                 if (newtreestart == TRUE)
                 {
-                    cat("Major problems\n")
+                    stop("MAJOR PROBLEMS 1\n")
                 }
 
                 # complete the ols
+                # TODOTODO: need to k+=1
                 cat("\n")
                 cat("Completing the OLS")
                 cat("\n")
@@ -204,11 +249,6 @@ clarstree <- function(x, y, cost, maxk = 50, eps = 1e-6, trace = FALSE, costfunc
                 activeMatrix[k, ] <- Active
 
                 # revert
-                cat("\n")
-                cat("Reverting the tree")
-                cat("\n")
-                print(newskipMatrix[newtreenum, ])
-
                 if (newtree == 1)
                 {
                     # if we go back to step 1
@@ -216,6 +256,7 @@ clarstree <- function(x, y, cost, maxk = 50, eps = 1e-6, trace = FALSE, costfunc
                     betaC <- beta[newtree, ]
                     muC <- mu[newtree, ]
                     Active <- activeMatrix[newtree, ]
+                    j <- Active
                     # repeat steps 1 and 2
                     ### STEP 1
                     ##########
@@ -245,6 +286,7 @@ clarstree <- function(x, y, cost, maxk = 50, eps = 1e-6, trace = FALSE, costfunc
                         newtreenum <- newtreenum + 1
                         newskipMatrix[newtreenum, j] <- TRUE
                         cat("No longer allowed at this node: ")
+                        cat("C\n")
                         newtreestart <- TRUE
                     } else {
                         cat("clars == lars\n")
@@ -257,9 +299,12 @@ clarstree <- function(x, y, cost, maxk = 50, eps = 1e-6, trace = FALSE, costfunc
                     cat("Back to step ")
                     cat(newtree)
                     cat(".\n")
+                    print(newskipMatrix[newtreenum, ])
+
                     betaC <- beta[newtree - 1, ]
                     muC <- mu[newtree - 1, ]
-                    Active <- activeMatrix[newtree - 1, ]
+                    Active <- activeMatrix[newtree, ]
+                    j <- Active
                     # TODOTODO might need to actually go back to k - 1
                     newtreestart <- TRUE
                 }
@@ -314,9 +359,11 @@ clarstree <- function(x, y, cost, maxk = 50, eps = 1e-6, trace = FALSE, costfunc
             }
         }
 
+        # TODOTODO this should happen any more
         # If gamma is longer than cmax/AA make a pit stop along the way
         if (drop(gamma) > gmax)
         {
+            cat("THIS SHOULD BE HAPPENING\n")
             # short gamma step
             shortgamma <- gmax
             mu[k, ] <- muC + drop(shortgamma) * u
@@ -401,7 +448,6 @@ clarstree <- function(x, y, cost, maxk = 50, eps = 1e-6, trace = FALSE, costfunc
             cat("\n\n")
         }
         Active <- j
-        activeMatrix[k, ] <- Active
     }
 
     list(mu = mu[1:k, ], beta = beta[1:k, ],
