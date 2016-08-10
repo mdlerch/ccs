@@ -1,4 +1,4 @@
-clarstree <- function(x, y, cost, maxk = 50, eps = 1e-6, trace = FALSE, costfunc = NULL)
+clarstree <- function(x, y, cost, maxk = 50, eps = 1e-6, trace = FALSE, costfunc = NULL, ofgmax = 1)
 {
     # default costfunc is just sum of used variables
     if (is.null(costfunc))
@@ -200,9 +200,9 @@ clarstree <- function(x, y, cost, maxk = 50, eps = 1e-6, trace = FALSE, costfunc
             # print(gamvec)
             if (newtreestart)
             {
-                OK <- Inactive & (gamvec < gmax) &! newskipMatrix[newtreenum, ] &! (gamvec == 0)
+                OK <- Inactive & (gamvec < ofgmax*gmax) &! newskipMatrix[newtreenum, ] &! (gamvec == 0)
             } else {
-                OK <- Inactive & (gamvec < gmax) &! (gamvec == 0)
+                OK <- Inactive & (gamvec < ofgmax*gmax) &! (gamvec == 0)
             }
 
             if (any(OK))
