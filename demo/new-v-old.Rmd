@@ -50,6 +50,7 @@ clars algorithm should be equivalent to lasso
 
 
 ```{r equal}
+pdf("equal.pdf", width = 10)
 par(mfrow = c(1, 2))
 ###########################################################################
 ##                      all variables cost the same                      ##
@@ -96,6 +97,7 @@ points(larsT.eval$score ~ larsT.eval$modelcost, col = "red", pch = 16, cex = 3)
 points(lassT.eval$score ~ lassT.eval$modelcost, col = "purple", pch = 16, cex = 2)
 
 legend('topright', c("clars", "lars", "lasso"), pch = 16, col = c("blue", "red", "purple"))
+dev.off()
 
 
 # set.seed(95)
@@ -146,7 +148,7 @@ Example 2: random cost, same order of magnitude
 ===============================================
 
 ```{r random}
-
+pdf("sameorder.pdf", width = 1)
 par(mfrow = c(1, 2))
 
 ###########################################################################
@@ -194,6 +196,7 @@ points(lassT.eval$score ~ lassT.eval$modelcost, col = "purple", pch = 16, cex = 
 
 legend('topright', c("clars", "lars", "lasso"), pch = 16, col = c("blue", "red", "purple"))
 
+dev.off()
 
 # set.seed(95)
 # cost <- runif(p, 1, 10)
@@ -244,7 +247,7 @@ Example 3: random cost, different order of magnitude
 ====================================================
 
 ```{r randommag}
-
+pdf("./difforder.pdf", width = 10)
 par(mfrow = c(1, 2))
 
 ###########################################################################
@@ -293,6 +296,7 @@ points(larsT.eval$score ~ larsT.eval$modelcost, col = "red", pch = 16, cex = 3)
 points(lassT.eval$score ~ lassT.eval$modelcost, col = "purple", pch = 16, cex = 2)
 
 legend('topright', c("clars", "lars", "lasso"), pch = 16, col = c("blue", "red", "purple"))
+dev.off()
 ###########################################################################
 ##                random cost different order of magnitude                ##
 ###########################################################################
@@ -553,7 +557,7 @@ If a blood measurement is already included, each subsequent blood measurement
 is "2" less than it would otherwise be.
 
 ```{r nonadd}
-
+pdf("nonlinear.pdf", width = 10)
 par(mfrow = c(1, 2))
 
 ###########################################################################
@@ -612,6 +616,7 @@ points(larsT.eval$score ~ larsT.eval$modelcost, col = "red", pch = 16, cex = 3)
 points(lassT.eval$score ~ lassT.eval$modelcost, col = "purple", pch = 16, cex = 2)
 
 legend('topright', c("clars", "lars", "lasso"), pch = 16, col = c("blue", "red", "purple"))
+dev.off()
 
 
 ###########################################################################
@@ -681,8 +686,8 @@ Example 7:  half cost worse version
 Duplicate variables, add random noise, noisy variables cost half the
 "originals"
 
-```{r halfcostextra}
-
+```{r halfcost}
+dev("./halfcost.pdf", width = 10)
 par(mfrow = c(1, 2))
 
 # TODO: better strategy: normalize by saturated model cost?
@@ -726,8 +731,25 @@ ytest <- y[test]
 
 
 set.seed(95)
-cost <- runif(p/2, 1, 10)
-cost <- c(cost, cost / 2)
+cost <- runif(10, 1, 10)
+costfunc <- function(x)
+{
+    x1 <- x[1:10]
+    x2 <- x[11:20]
+    if (any(x1 & x2))
+    {
+        return(sum(cost)^2)
+    }
+    return(sum(cost[which(x1)]) + sum(cost[which(x2) + 10] / 2))
+}
+
+
+cost <- c(cost, cost)
+clarsP <- clarstree(xtrain, ytrain, cost, maxk = 500, trace = FALSE, costfunc = costfunc)
+larsP <- lars(xtrain, ytrain, type = "lar")
+lassP <- lars(xtrain, ytrain, type = "lasso")
+
+
 
 clarsP <- clarstree(xtrain, ytrain, cost, maxk = 500, trace = FALSE)
 larsP <- lars(xtrain, ytrain, type = "lar")
