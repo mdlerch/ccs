@@ -1,3 +1,4 @@
+pdf("./nonlinear.pdf")
 cost <- function(x, a = 100)
 {
     if(x > a)
@@ -6,6 +7,6 @@ cost <- function(x, a = 100)
     }
     return(x)
 }
-
-top <- 200
-plot(0:top, sapply(0:top, cost), type = 'l', xlab = "True cost", ylab = "Effective cost")
+top <- 500
+plot(0:top, sapply(0:top, cost), type = 'l', xlab = "Financial cost", ylab = "Effective cost")
+dev.off()

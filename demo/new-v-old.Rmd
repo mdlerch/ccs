@@ -74,7 +74,7 @@ ylim <- c(min(clarsP.eval$score, larsP.eval$score, lassP.eval$score),
           max(clarsP.eval$score, larsP.eval$score, lassP.eval$score))
 
 plot(clarsP.eval$score ~ clarsP.eval$modelcost, type = "p", xlim = xlim, ylim = ylim,
-     col = "blue", pch = 16, cex = 4, xlab = "Model Cost", ylab = "Score")
+     col = "blue", pch = 16, cex = 4, xlab = "Model Cost", ylab = "MSPE")
 
 points(larsP.eval$score ~ larsP.eval$modelcost, col = "red", pch = 16, cex = 3)
 points(lassP.eval$score ~ lassP.eval$modelcost, col = "purple", pch = 16, cex = 2)
@@ -91,7 +91,7 @@ ylim <- c(min(clarsT.eval$score, larsT.eval$score, lassT.eval$score),
           max(clarsT.eval$score, larsT.eval$score, lassT.eval$score))
 
 plot(clarsT.eval$score ~ clarsT.eval$modelcost, type = "p", xlim = xlim, ylim = ylim,
-     col = "blue", pch = 16, cex = 4, xlab = "Model Cost", ylab = "Score")
+     col = "blue", pch = 16, cex = 4, xlab = "Model Cost", ylab = "MSPE")
 
 points(larsT.eval$score ~ larsT.eval$modelcost, col = "red", pch = 16, cex = 3)
 points(lassT.eval$score ~ lassT.eval$modelcost, col = "purple", pch = 16, cex = 2)
@@ -148,7 +148,7 @@ Example 2: random cost, same order of magnitude
 ===============================================
 
 ```{r random}
-pdf("sameorder.pdf", width = 1)
+pdf("sameorder.pdf", width = 10)
 par(mfrow = c(1, 2))
 
 ###########################################################################
@@ -172,7 +172,7 @@ ylim <- c(min(clarsP.eval$score, larsP.eval$score, lassP.eval$score),
           max(clarsP.eval$score, larsP.eval$score, lassP.eval$score))
 
 plot(clarsP.eval$score ~ clarsP.eval$modelcost, type = "p", xlim = xlim, ylim = ylim,
-     col = "blue", pch = 16, cex = 4, xlab = "Model Cost", ylab = "Score")
+     col = "blue", pch = 16, cex = 4, xlab = "Model Cost", ylab = "MSPE")
 
 points(larsP.eval$score ~ larsP.eval$modelcost, col = "red", pch = 16, cex = 3)
 points(lassP.eval$score ~ lassP.eval$modelcost, col = "purple", pch = 16, cex = 2)
@@ -189,7 +189,7 @@ ylim <- c(min(clarsT.eval$score, larsT.eval$score, lassT.eval$score),
           max(clarsT.eval$score, larsT.eval$score, lassT.eval$score))
 
 plot(clarsT.eval$score ~ clarsT.eval$modelcost, type = "p", xlim = xlim, ylim = ylim,
-     col = "blue", pch = 16, cex = 4, xlab = "Model Cost", ylab = "Score")
+     col = "blue", pch = 16, cex = 4, xlab = "Model Cost", ylab = "MSPE")
 
 points(larsT.eval$score ~ larsT.eval$modelcost, col = "red", pch = 16, cex = 3)
 points(lassT.eval$score ~ lassT.eval$modelcost, col = "purple", pch = 16, cex = 2)
@@ -247,7 +247,7 @@ Example 3: random cost, different order of magnitude
 ====================================================
 
 ```{r randommag}
-pdf("./difforder.pdf", width = 10)
+pdf("./difforder-non.pdf", width = 10)
 par(mfrow = c(1, 2))
 
 ###########################################################################
@@ -272,7 +272,7 @@ ylim <- c(min(clarsP.eval$score, larsP.eval$score, lassP.eval$score),
           max(clarsP.eval$score, larsP.eval$score, lassP.eval$score))
 
 plot(clarsP.eval$score ~ clarsP.eval$modelcost, type = "p", xlim = xlim, ylim = ylim,
-     col = "blue", pch = 16, cex = 4, xlab = "Model Cost", ylab = "Score")
+     col = "blue", pch = 16, cex = 4, xlab = "Model Cost", ylab = "MSPE")
 
 points(larsP.eval$score ~ larsP.eval$modelcost, col = "red", pch = 16, cex = 3)
 points(lassP.eval$score ~ lassP.eval$modelcost, col = "purple", pch = 16, cex = 2)
@@ -290,7 +290,7 @@ ylim <- c(min(clarsT.eval$score, larsT.eval$score, lassT.eval$score),
           max(clarsT.eval$score, larsT.eval$score, lassT.eval$score))
 
 plot(clarsT.eval$score ~ clarsT.eval$modelcost, type = "p", xlim = xlim, ylim = ylim,
-     col = "blue", pch = 16, cex = 4, xlab = "Model Cost", ylab = "Score")
+     col = "blue", pch = 16, cex = 4, xlab = "Model Cost", ylab = "MSPE")
 
 points(larsT.eval$score ~ larsT.eval$modelcost, col = "red", pch = 16, cex = 3)
 points(lassT.eval$score ~ lassT.eval$modelcost, col = "purple", pch = 16, cex = 2)
@@ -374,7 +374,7 @@ ylim <- c(min(clarsP.eval$score, larsP.eval$score, lassP.eval$score),
           max(clarsP.eval$score, larsP.eval$score, lassP.eval$score))
 
 plot(clarsP.eval$score ~ clarsP.eval$modelcost, type = "p", xlim = xlim, ylim = ylim,
-     col = "blue", pch = 16, cex = 4, xlab = "Model Cost", ylab = "Score")
+     col = "blue", pch = 16, cex = 4, xlab = "Model Cost", ylab = "MSPE")
 
 points(larsP.eval$score ~ larsP.eval$modelcost, col = "red", pch = 16, cex = 3)
 points(lassP.eval$score ~ lassP.eval$modelcost, col = "purple", pch = 16, cex = 2)
@@ -392,7 +392,7 @@ ylim <- c(min(clarsT.eval$score, larsT.eval$score, lassT.eval$score),
           max(clarsT.eval$score, larsT.eval$score, lassT.eval$score))
 
 plot(clarsT.eval$score ~ clarsT.eval$modelcost, type = "p", xlim = xlim, ylim = ylim,
-     col = "blue", pch = 16, cex = 4, xlab = "Model Cost", ylab = "Score")
+     col = "blue", pch = 16, cex = 4, xlab = "Model Cost", ylab = "MSPE")
 
 points(larsT.eval$score ~ larsT.eval$modelcost, col = "red", pch = 16, cex = 3)
 points(lassT.eval$score ~ lassT.eval$modelcost, col = "purple", pch = 16, cex = 2)
@@ -476,7 +476,7 @@ ylim <- c(min(clarsP.eval$score, larsP.eval$score, lassP.eval$score),
           max(clarsP.eval$score, larsP.eval$score, lassP.eval$score))
 
 plot(clarsP.eval$score ~ clarsP.eval$modelcost, type = "p", xlim = xlim, ylim = ylim,
-     col = "blue", pch = 16, cex = 4, xlab = "Model Cost", ylab = "Score")
+     col = "blue", pch = 16, cex = 4, xlab = "Model Cost", ylab = "MSPE")
 
 points(larsP.eval$score ~ larsP.eval$modelcost, col = "red", pch = 16, cex = 3)
 points(lassP.eval$score ~ lassP.eval$modelcost, col = "purple", pch = 16, cex = 2)
@@ -494,7 +494,7 @@ ylim <- c(min(clarsT.eval$score, larsT.eval$score, lassT.eval$score),
           max(clarsT.eval$score, larsT.eval$score, lassT.eval$score))
 
 plot(clarsT.eval$score ~ clarsT.eval$modelcost, type = "p", xlim = xlim, ylim = ylim,
-     col = "blue", pch = 16, cex = 4, xlab = "Model Cost", ylab = "Score")
+     col = "blue", pch = 16, cex = 4, xlab = "Model Cost", ylab = "MSPE")
 
 points(larsT.eval$score ~ larsT.eval$modelcost, col = "red", pch = 16, cex = 3)
 points(lassT.eval$score ~ lassT.eval$modelcost, col = "purple", pch = 16, cex = 2)
@@ -557,7 +557,7 @@ If a blood measurement is already included, each subsequent blood measurement
 is "2" less than it would otherwise be.
 
 ```{r nonadd}
-pdf("nonlinear.pdf", width = 10)
+pdf("nonadditive.pdf", width = 10)
 par(mfrow = c(1, 2))
 
 ###########################################################################
@@ -582,9 +582,9 @@ clarsP <- clarstree(xtrain, ytrain, cost, maxk = 100, trace = FALSE, costfunc = 
 larsP <- lars(xtrain, ytrain, type = "lar")
 lassP <- lars(xtrain, ytrain, type = "lasso")
 
-clarsP.eval <- evalclars(clarsP, xtrain, ytrain, cost)
-larsP.eval <- evalclars(list(beta = larsP$beta), xtrain, ytrain, cost)
-lassP.eval <- evalclars(list(beta = lassP$beta), xtrain, ytrain, cost)
+clarsP.eval <- evalclars(clarsP, xtrain, ytrain, cost, costfunc)
+larsP.eval <- evalclars(list(beta = larsP$beta), xtrain, ytrain, cost, costfunc)
+lassP.eval <- evalclars(list(beta = lassP$beta), xtrain, ytrain, cost, costfunc)
 
 xlim <- c(min(clarsP.eval$modelcost, larsP.eval$modelcost, lassP.eval$modelcost),
           max(clarsP.eval$modelcost, larsP.eval$modelcost, lassP.eval$modelcost))
@@ -592,7 +592,7 @@ ylim <- c(min(clarsP.eval$score, larsP.eval$score, lassP.eval$score),
           max(clarsP.eval$score, larsP.eval$score, lassP.eval$score))
 
 plot(clarsP.eval$score ~ clarsP.eval$modelcost, type = "p", xlim = xlim, ylim = ylim,
-     col = "blue", pch = 16, cex = 4, xlab = "Model Cost", ylab = "Score")
+     col = "blue", pch = 16, cex = 4, xlab = "Model Cost", ylab = "MSPE")
 
 points(larsP.eval$score ~ larsP.eval$modelcost, col = "red", pch = 16, cex = 3)
 points(lassP.eval$score ~ lassP.eval$modelcost, col = "purple", pch = 16, cex = 2)
@@ -600,9 +600,9 @@ points(lassP.eval$score ~ lassP.eval$modelcost, col = "purple", pch = 16, cex = 
 legend('topright', c("clars", "lars", "lasso"), pch = 16, col = c("blue", "red", "purple"))
 
 
-clarsT.eval <- evalclars(clarsP, xtest, ytest, cost)
-larsT.eval <- evalclars(list(beta = larsP$beta), xtest, ytest, cost)
-lassT.eval <- evalclars(list(beta = lassP$beta), xtest, ytest, cost)
+clarsT.eval <- evalclars(clarsP, xtest, ytest, cost, costfunc)
+larsT.eval <- evalclars(list(beta = larsP$beta), xtest, ytest, cost, costfunc)
+lassT.eval <- evalclars(list(beta = lassP$beta), xtest, ytest, cost, costfunc)
 
 xlim <- c(min(clarsT.eval$modelcost, larsT.eval$modelcost, lassT.eval$modelcost),
           max(clarsT.eval$modelcost, larsT.eval$modelcost, lassT.eval$modelcost))
@@ -610,7 +610,7 @@ ylim <- c(min(clarsT.eval$score, larsT.eval$score, lassT.eval$score),
           max(clarsT.eval$score, larsT.eval$score, lassT.eval$score))
 
 plot(clarsT.eval$score ~ clarsT.eval$modelcost, type = "p", xlim = xlim, ylim = ylim,
-     col = "blue", pch = 16, cex = 4, xlab = "Model Cost", ylab = "Score")
+     col = "blue", pch = 16, cex = 4, xlab = "Model Cost", ylab = "MSPE")
 
 points(larsT.eval$score ~ larsT.eval$modelcost, col = "red", pch = 16, cex = 3)
 points(lassT.eval$score ~ lassT.eval$modelcost, col = "purple", pch = 16, cex = 2)
@@ -687,7 +687,7 @@ Duplicate variables, add random noise, noisy variables cost half the
 "originals"
 
 ```{r halfcost}
-dev("./halfcost.pdf", width = 10)
+pdf("./halfcost-clars.pdf", width = 10)
 par(mfrow = c(1, 2))
 
 # TODO: better strategy: normalize by saturated model cost?
@@ -730,17 +730,17 @@ ytest <- y[test]
 ###########################################################################
 
 
-set.seed(95)
-cost <- runif(10, 1, 10)
+set.seed(93)
+cost <- exp(runif(10, 1, 10))
 costfunc <- function(x)
 {
     x1 <- x[1:10]
     x2 <- x[11:20]
     if (any(x1 & x2))
     {
-        return(sum(cost)^2)
+        return(1000000)
     }
-    return(sum(cost[which(x1)]) + sum(cost[which(x2) + 10] / 2))
+    return(sum(cost[which(x1)]) + sum(cost[which(x2) + 10] / 10))
 }
 
 
@@ -749,15 +749,25 @@ clarsP <- clarstree(xtrain, ytrain, cost, maxk = 500, trace = FALSE, costfunc = 
 larsP <- lars(xtrain, ytrain, type = "lar")
 lassP <- lars(xtrain, ytrain, type = "lasso")
 
+a <- clarsP$beta[ , 1:10]
+b <- clarsP$beta[ , 11:20]
+OK <- !apply(a & b, 1, any)
+clarsPP <- list(beta = clarsP$beta[OK, ])
+
+a <- larsP$beta[ , 1:10]
+b <- larsP$beta[ , 11:20]
+OK <- !apply(a & b, 1, any)
+larsPP <- list(beta = larsP$beta[OK, ])
+
+a <- lassP$beta[ , 1:10]
+b <- lassP$beta[ , 11:20]
+OK <- !apply(a & b, 1, any)
+lassPP <- list(beta = lassP$beta[OK, ])
 
 
-clarsP <- clarstree(xtrain, ytrain, cost, maxk = 500, trace = FALSE)
-larsP <- lars(xtrain, ytrain, type = "lar")
-lassP <- lars(xtrain, ytrain, type = "lasso")
-
-clarsP.eval <- evalclars(clarsP, xtrain, ytrain, cost)
-larsP.eval <- evalclars(list(beta = larsP$beta), xtrain, ytrain, cost)
-lassP.eval <- evalclars(list(beta = lassP$beta), xtrain, ytrain, cost)
+clarsP.eval <- evalclars(clarsPP, xtrain, ytrain, cost, costfunc)
+larsP.eval <- evalclars(list(beta = larsPP$beta), xtrain, ytrain, cost, costfunc)
+lassP.eval <- evalclars(list(beta = lassPP$beta), xtrain, ytrain, cost, costfunc)
 
 xlim <- c(min(clarsP.eval$modelcost, larsP.eval$modelcost, lassP.eval$modelcost),
           max(clarsP.eval$modelcost, larsP.eval$modelcost, lassP.eval$modelcost))
@@ -765,16 +775,15 @@ ylim <- c(min(clarsP.eval$score, larsP.eval$score, lassP.eval$score),
           max(clarsP.eval$score, larsP.eval$score, lassP.eval$score))
 
 plot(clarsP.eval$score ~ clarsP.eval$modelcost, type = "p", xlim = xlim, ylim = ylim,
-     col = "blue", pch = 16, cex = 4, xlab = "Model Cost", ylab = "Score")
-
+     col = "blue", pch = 16, cex = 4, xlab = "Model Cost", ylab = "MSPE")
 points(larsP.eval$score ~ larsP.eval$modelcost, col = "red", pch = 16, cex = 3)
 points(lassP.eval$score ~ lassP.eval$modelcost, col = "purple", pch = 16, cex = 2)
 
 legend('topright', c("clars", "lars", "lasso"), pch = 16, col = c("blue", "red", "purple"))
 
-clarsT.eval <- evalclars(clarsP, xtest, ytest, cost)
-larsT.eval <- evalclars(list(beta = larsP$beta), xtest, ytest, cost)
-lassT.eval <- evalclars(list(beta = lassP$beta), xtest, ytest, cost)
+clarsT.eval <- evalclars(clarsPP, xtest, ytest, cost, costfunc)
+larsT.eval <- evalclars(list(beta = larsPP$beta), xtest, ytest, cost, costfunc)
+lassT.eval <- evalclars(list(beta = lassPP$beta), xtest, ytest, cost, costfunc)
 
 xlim <- c(min(clarsT.eval$modelcost, larsT.eval$modelcost, lassT.eval$modelcost),
           max(clarsT.eval$modelcost, larsT.eval$modelcost, lassT.eval$modelcost))
@@ -782,12 +791,14 @@ ylim <- c(min(clarsT.eval$score, larsT.eval$score, lassT.eval$score),
           max(clarsT.eval$score, larsT.eval$score, lassT.eval$score))
 
 plot(clarsT.eval$score ~ clarsT.eval$modelcost, type = "p", xlim = xlim, ylim = ylim,
-     col = "blue", pch = 16, cex = 4, xlab = "Model Cost", ylab = "Score")
+     col = "blue", pch = 16, cex = 4, xlab = "Model Cost", ylab = "MSPE")
 
+plot(larsT.eval$score ~ larsT.eval$modelcost, col = "red", pch = 16, cex = 3, xlim = xlim, ylim = ylim, xlab = "Model Cost", ylab = "MSPE")
 points(larsT.eval$score ~ larsT.eval$modelcost, col = "red", pch = 16, cex = 3)
 points(lassT.eval$score ~ lassT.eval$modelcost, col = "purple", pch = 16, cex = 2)
 
 legend('topright', c("clars", "lars", "lasso"), pch = 16, col = c("blue", "red", "purple"))
+dev.off()
 
 ```
 
@@ -825,7 +836,7 @@ ylim <- c(min(clarsP.eval$score, larsP.eval$score, lassP.eval$score),
           max(clarsP.eval$score, larsP.eval$score, lassP.eval$score))
 
 plot(clarsP.eval$score ~ clarsP.eval$modelcost, type = "p", xlim = xlim, ylim = ylim,
-     col = "blue", pch = 16, cex = 4, xlab = "Model Cost", ylab = "Score")
+     col = "blue", pch = 16, cex = 4, xlab = "Model Cost", ylab = "MSPE")
 
 points(larsP.eval$score ~ larsP.eval$modelcost, col = "red", pch = 16, cex = 3)
 points(lassP.eval$score ~ lassP.eval$modelcost, col = "purple", pch = 16, cex = 2)
@@ -842,7 +853,7 @@ ylim <- c(min(clarsT.eval$score, larsT.eval$score, lassT.eval$score),
           max(clarsT.eval$score, larsT.eval$score, lassT.eval$score))
 
 plot(clarsT.eval$score ~ clarsT.eval$modelcost, type = "p", xlim = xlim, ylim = ylim,
-     col = "blue", pch = 16, cex = 4, xlab = "Model Cost", ylab = "Score")
+     col = "blue", pch = 16, cex = 4, xlab = "Model Cost", ylab = "MSPE")
 
 points(larsT.eval$score ~ larsT.eval$modelcost, col = "red", pch = 16, cex = 3)
 points(lassT.eval$score ~ lassT.eval$modelcost, col = "purple", pch = 16, cex = 2)
