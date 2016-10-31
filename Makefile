@@ -18,5 +18,5 @@ clean:
 	-rm -rf $(PKG_NAME).Rcheck
 
 $(PKG_NAME)_$(PKG_VERS).tar.gz: DESCRIPTION
-	# Rscript -e "Rcpp::compileAttributes()"
+	Rscript -e "Rcpp::compileAttributes()"
 	R CMD build ../$(PKG_NAME)

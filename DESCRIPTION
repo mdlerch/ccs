@@ -8,3 +8,6 @@ Maintainer: Michael Lerch <mdlerch@gmail.com>
 Description: Algorithms for cost-considerate statistics including clars
 License: MIT
 Imports: lars
+Imports: Rcpp (>= 0.12.7)
+LinkingTo: Rcpp, RcppArmadillo
+
