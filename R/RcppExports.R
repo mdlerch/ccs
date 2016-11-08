@@ -5,3 +5,7 @@ larscpp <- function(x, beta, y, maxk) {
     .Call('ccs_larscpp', PACKAGE = 'ccs', x, beta, y, maxk)
 }
 
+lassocpp <- function(x, beta, y, maxk) {
+    .Call('ccs_lassocpp', PACKAGE = 'ccs', x, beta, y, maxk)
+}
+
